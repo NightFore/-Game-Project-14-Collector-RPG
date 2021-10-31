@@ -17,47 +17,31 @@ class Game:
     def init_game(self):
         pass
 
-    def new_game(self):
-        pass
-
     def draw(self):
         pass
 
     def update(self):
         pass
 
+    def new_game(self):
+        self.main.update_menu("battle_menu")
 
-def init_menu(main, menu, clear=True):
-    menu_dict = main.main_dict["menu"][menu]
-    if clear:
-        clear_menu(main)
+    def use_weapon(self):
+        print("Use Weapon WIP")
 
-    main.update_music(main.music_dict[menu_dict["music"]])
-    main.update_background(main.background_dict[menu_dict["background"]])
 
-    for button in main.button_dict[menu]:
-        Button(main, main.buttons, main.button_dict, data=menu, item=button)
-
-def clear_menu(main):
-    for sprite in main.all_sprites:
-        sprite.kill()
-
-def main_menu(main, menu):
-    init_menu(main, menu)
-    main.game.new_game()
-
-def pause_menu(main):
-    main.paused = not main.paused
 
 MAIN_DICT = {
     "background": {
+        None: None,
         "default": {
             "color": DARK_SKY_BLUE,
             "image": None,
         },
     },
     "music": {
-        "default": None,
+        None: None,
+        "default": "music_WinglessSeraph_battle_TheOath.mp3",
     },
     "sound": {
     },
@@ -66,15 +50,17 @@ MAIN_DICT = {
     },
     "menu": {
         "main_menu": {
-            "call": main_menu,
             "background": "default",
             "music": "default",
-            "ui": {},
-            "button": {},
         },
         "pause_menu": {
-            "call": pause_menu,
+            "background": None,
+            "music": None,
         },
+        "battle_menu": {
+            "background": None,
+            "music": None,
+        }
     },
     "button": {
         "settings": {
@@ -84,7 +70,7 @@ MAIN_DICT = {
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
-            "icon": {
+            "weapon_icon": {
                 "align": "nw", "size": (50, 50),
                 "border": True, "border_size": (5, 5), "border_color": BLACK,
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
@@ -96,6 +82,9 @@ MAIN_DICT = {
             "select_level": {"type": "default", "pos": (20, 90), "text": "Select Level", "action": None},
             "exit": {"type": "default", "pos": (20, 160), "text": "Exit", "action": "self.main.quit_game"},
         },
+        "battle_menu": {
+            "weapon_button": {"type": "weapon_icon", "pos": (20, 20), "text": None, "action": "self.game.use_weapon"},
+        }
     },
     "game": {
         "settings": {

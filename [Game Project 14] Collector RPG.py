@@ -90,7 +90,9 @@ class Main:
 
         self.font = pygame.font.Font(None, 100)
         for font in self.font_dict:
-            self.load_font(font)
+            font_ttf = self.font_dict[font]["ttf"]
+            font_size = self.font_dict[font]["size"]
+            self.font_dict[font] = pygame.font.Font(path.join(self.font_folder, font_ttf), font_size)
 
         # Pause Screen
         self.dim_screen = pygame.Surface(self.gameDisplay.get_size()).convert_alpha()
@@ -133,12 +135,13 @@ class Main:
         quit()
 
     def events(self):
-        self.event = pygame.event.get()
         self.click = [None, False, False, False, False, False]
-        for event in self.event:
-            self.mouse = pygame.mouse.get_pos()
+        # Left Click, Middle Click, Right Click, Scroll Up, Scroll Down
 
+        self.event = pygame.event.get()
+        for event in self.event:
             # Rescaling mouse position to screen size
+            self.mouse = pygame.mouse.get_pos()
             if self.gameDisplay.factor_w != 1 or self.gameDisplay.factor_h != 1:
                 mouse_w = int(self.mouse[0] / self.gameDisplay.factor_w)
                 mouse_h = int(self.mouse[1] / self.gameDisplay.factor_h)
@@ -146,26 +149,24 @@ class Main:
 
             if event.type == pygame.QUIT:
                 self.quit_game()
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.click[event.button] = True
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.quit_game()
-                if event.key == pygame.K_p:
-                    if self.pause_check:
-                        self.paused = not self.paused
+                if event.key == pygame.K_p and self.pause_check:
+                    self.pause_check = False
+                    self.paused = not self.paused
                     if self.paused:
                         pygame.mixer.music.pause()
                     else:
                         pygame.mixer.music.unpause()
-                    self.pause_check = False
                 if event.key == pygame.K_h:
                     self.debug_mode = not self.debug_mode
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_p:
                     self.pause_check = True
+
 
     def update(self):
         self.game.update()
@@ -193,23 +194,24 @@ class Main:
         # Update ---------------------- #
         self.gameDisplay.update(self.event)
 
-    def update_background(self, background_dict):
-        color = background_dict["color"]
-        if color is not None and self.background_color != color:
-            self.background_color = color
-
-        image = background_dict["image"]
-        if image is not None:
-            image = load_image(self.graphics_folder, image)
-        if self.background_image != image:
-            self.background_image = image
-
     def update_menu(self, menu=None):
-        if menu is not None:
-            self.menu = menu
-            self.menu_dict[menu]["call"](self, menu)
-        else:
-            self.menu_dict[self.menu]["call"](self, self.menu)
+        self.menu = menu
+        menu_dict = self.main_dict["menu"][menu]
+        self.update_background(self.background_dict[menu_dict["background"]])
+        self.update_music(self.music_dict[menu_dict["music"]])
+        self.update_button(self.button_dict[self.menu])
+
+    def update_background(self, background):
+        if background is not None:
+            color = background["color"]
+            if color is not None and self.background_color != color:
+                self.background_color = color
+
+            image = background["image"]
+            if image is not None:
+                image = load_image(self.graphics_folder, image)
+            if self.background_image != image:
+                self.background_image = image
 
     def update_music(self, music):
         if music is not None:
@@ -219,24 +221,19 @@ class Main:
                 pygame.mixer.music.load(self.music)
                 pygame.mixer.music.play(-1)
 
+    def update_button(self, buttons):
+        self.clear_sprites()
+        for button in buttons:
+            Button(self, self.buttons, self.button_dict, data=self.menu, item=button)
+
+    def clear_sprites(self):
+        for sprite in self.all_sprites:
+            sprite.kill()
+
     def update_volume(self, dv=0):
         if 0 <= self.volume + dv <= 100:
             self.volume = self.volume + dv
             pygame.mixer.music.set_volume(self.volume/100)
-
-    def update_sprite(self, sprite, move=False, keys=False):
-        if move:
-            sprite.update_move()
-        if keys:
-            sprite.get_keys()
-        update_time_dependent(sprite)
-        update_center(sprite)
-        update_bobbing(sprite)
-
-    def load_font(self, font):
-        font_ttf = self.font_dict[font]["ttf"]
-        font_size = self.font_dict[font]["size"]
-        self.font_dict[font] = pygame.font.Font(path.join(self.font_folder, font_ttf), font_size)
 
 m = Main()
 while True:
