@@ -1,11 +1,12 @@
 import pygame
+import os
 import random
 from Settings import *
 from os import path
 vec = pygame.math.Vector2
 
 """
-    Sprite initialization functions
+    Sprite (Initialization)
 """
 def init_sprite(self, main, group, dict, data, item, parent, variable, action):
     # Class
@@ -73,19 +74,24 @@ def init_sprite_text(self, text=None):
         self.font_color = None
         print("Color not initialized")
 
+
+
+"""
+    Sprite (Surface)
+"""
 def init_sprite_surface(self):
     if "pos" in self.object:
         self.pos = self.object["pos"]
     if "pos" in self.settings:
         self.pos = self.settings["pos"]
-    if "size" in self.object:
-        self.size = self.object["size"]
-    if "size" in self.settings:
-        self.size = self.settings["size"]
     if "align" in self.object:
         self.align = self.object["align"]
     if "align" in self.settings:
         self.align = self.settings["align"]
+    if "size" in self.object:
+        self.size = self.object["size"]
+    if "size" in self.settings:
+        self.size = self.settings["size"]
     if "border_size" in self.object:
         self.border_size = self.object["border_size"]
     if "border_size" in self.settings:
@@ -98,7 +104,6 @@ def init_sprite_surface(self):
         self.border_color = self.object["border_color"]
     if "border_color" in self.settings:
         self.border_color = self.settings["border_color"]
-
     self.surface = pygame.Surface(self.size)
     self.surface_rect = (self.border_size[0], self.border_size[1], self.size[0] - 2*self.border_size[0], self.size[1] - 2*self.border_size[1])
     self.rect = self.main.align_rect(self.surface, self.pos[0], self.pos[1], self.align)
@@ -110,6 +115,59 @@ def init_surface(surface, surface_rect, color, border_color=None):
     pygame.draw.rect(surface, color, surface_rect)
     return surface
 
+
+
+"""
+    Sprite (Animated)
+"""
+def init_sprite_image(self):
+    # Load
+    self.pos = self.settings["pos"]
+    self.align = self.settings["align"]
+    self.size = self.object["size"]
+    self.image_table = load_tile_table(path.join(self.main.graphic_folder, self.object["image"]), self.size[0], self.size[1])
+    self.animation_time = self.settings["animation_time"]
+    self.animation_loop = self.settings["animation_loop"]
+    self.animation_reverse = self.settings["animation_reverse"]
+
+    # New
+    self.index_table, self.index_image = 0, 0
+    self.images = self.image_table[self.index_table]
+    self.image = self.images[self.index_image]
+    self.surface = self.image
+    self.surface_rect = self.surface.get_rect()
+    self.rect = self.main.align_rect(self.surface, self.pos[0], self.pos[1], self.align)
+
+    # Animation
+    self.dt = self.main.dt
+    self.current_time = 0
+    self.loop_count = 0
+    self.index_loop = 0
+    self.index_increment = 1
+
+def update_time_dependent(self):
+    self.current_time += self.dt
+    if self.current_time >= self.animation_time:
+        if self.index_loop == len(self.images)-1:
+            self.loop_count += 1
+            self.index_loop = 0
+            if self.animation_reverse:
+                self.index_increment = -self.index_increment
+        self.current_time = 0
+        self.index_loop += 1
+        self.index_image = (self.index_image + self.index_increment) % len(self.images)
+        self.image = self.images[self.index_image]
+        if not self.animation_loop and self.index_image == 0 and self.loop != 0:
+            self.kill()
+    self.image = pygame.transform.rotate(self.image, 0)
+
+
+
+
+
+"""
+    Others
+"""
 def update_sprite_rect(self, x=None, y=None):
     if x is None:
         x = self.pos[0]
@@ -117,6 +175,20 @@ def update_sprite_rect(self, x=None, y=None):
         y = self.pos[1]
     self.pos = (x, y)
     self.rect = self.main.align_rect(self.surface, int(self.pos[0]), int(self.pos[1]), self.align)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -163,19 +235,6 @@ def update_move(sprite, dx=None, dy=None):
         sprite.pos.y += dy
     update_rect(sprite)
 
-def update_time_dependent(sprite):
-    if sprite.table:
-        sprite.current_time += sprite.dt
-        if sprite.current_time >= sprite.animation_time:
-            if sprite.index == len(sprite.images)-1:
-                sprite.loop += 1
-            sprite.current_time = 0
-            sprite.index = (sprite.index + 1) % len(sprite.images)
-            sprite.image = sprite.images[sprite.index]
-        if sprite.animation_loop and sprite.index == 0 and sprite.loop != 0:
-            sprite.kill()
-        sprite.image = pygame.transform.rotate(sprite.image, 0)
-
 def update_center(sprite):
     if sprite.center:
         sprite.rect = sprite.image.get_rect()
@@ -197,13 +256,13 @@ def update_bobbing(sprite):
 """
 def create_grid(locked_pos={}):
     grid = [[(0, 0, 0) for _ in range(10)] for _ in range(20)]
-
     for i in range(len(grid)):
         for j in range(len(grid[i])):
             if (j, i) in locked_pos:
                 c = locked_pos[(j, i)]
                 grid[i][j] = c
     return grid
+
 
 def load_file(path, image=False):
     file = []
@@ -215,19 +274,19 @@ def load_file(path, image=False):
     return file
 
 
-def load_image(image_path, image_directory):
-    if isinstance(image_directory, list):
+def load_image(image_path, image_dir):
+    if isinstance(image_dir, list):
         images = []
-        for image in image_directory:
+        for image in image_dir:
             images.append(pygame.image.load(path.join(image_path, image)).convert_alpha())
         return images
     else:
-        return pygame.image.load(path.join(image_path, image_directory)).convert_alpha()
+        return pygame.image.load(path.join(image_path, image_dir)).convert_alpha()
 
 
-def load_tile_table(filename, width, height, reverse, colorkey=(0, 0, 0)):
+def load_tile_table(filename, width, height, reverse=False, color_key=(0, 0, 0)):
     image = pygame.image.load(filename).convert_alpha()
-    image.set_colorkey(colorkey)
+    image.set_colorkey(color_key)
     image_width, image_height = image.get_size()
     tile_table = []
     if not reverse:
@@ -247,28 +306,9 @@ def load_tile_table(filename, width, height, reverse, colorkey=(0, 0, 0)):
     return tile_table
 
 
-def transparent_surface(width, height, color, border, colorkey=(0, 0, 0)):
+def transparent_surface(width, height, color, border, color_key=(0, 0, 0)):
     surface = pygame.Surface((width, height)).convert()
-    surface.set_colorkey(colorkey)
+    surface.set_colorkey(color_key)
     surface.fill(color)
-    surface.fill(colorkey, surface.get_rect().inflate(-border, -border))
+    surface.fill(color_key, surface.get_rect().inflate(-border, -border))
     return surface
-
-
-def sort_list(list, var, reverse=False):
-    if reverse:
-        list.reverse()
-
-    for i in range(len(list)):
-        # Display list
-        # print(list)
-
-        if list[i] == var:
-            cpt = 0
-            while list[i + cpt] == var and i + cpt < len(list)-1:
-                cpt += 1
-            list[i] = list[i+cpt]
-            list[i+cpt] = var
-
-    if reverse:
-        list.reverse()

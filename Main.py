@@ -25,9 +25,48 @@ class Game:
 
     def new_game(self):
         self.main.update_menu("battle_menu")
+        self.player = Player(self.main, self.main.player, self.game_dict, data="character", item="player")
 
     def use_weapon(self):
         print("Use Weapon WIP")
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
+        # Initialization -------------- #
+        init_sprite(self, main, group, dict, data, item, parent, variable, action)
+
+    def init(self):
+        init_sprite_image(self)
+
+    def load(self):
+        pass
+
+    def new(self):
+        pass
+
+    def get_keys(self):
+        # Initialization
+        keys = pygame.key.get_pressed()
+
+    def draw(self):
+        self.main.gameDisplay.blit(self.image, self.rect)
+
+    def update(self):
+        update_time_dependent(self)
+        Test = False
+        if Test:
+            if True:
+                self.update_move()
+            if True:
+                self.get_keys()
+            update_center(self)
+            update_bobbing(self)
+
+    def update_move(self):
+        pass
+
+
 
 
 
@@ -88,6 +127,15 @@ MAIN_DICT = {
     },
     "game": {
         "settings": {
+            "character": {
+                "pos": [640, 360], "align": "center",
+                "animation_time": 0.50, "animation_loop": True, "animation_reverse": True
+            }
         },
+        "character": {
+            "player": {
+                "image": "sprite_Kaduki_Actor63.png", "size": [32, 32]
+            }
+        }
     },
 }

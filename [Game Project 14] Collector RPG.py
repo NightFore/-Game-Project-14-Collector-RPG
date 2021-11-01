@@ -66,7 +66,7 @@ class Main:
         # Directories
         self.game_folder = path.dirname(__file__)
         self.data_folder = path.join(self.game_folder, "data")
-        self.graphics_folder = path.join(self.data_folder, "graphics")
+        self.graphic_folder = path.join(self.data_folder, "graphic")
         self.se_folder = path.join(self.data_folder, "sound")
         self.music_folder = path.join(self.data_folder, "music")
         self.map_folder = path.join(self.data_folder, "map")
