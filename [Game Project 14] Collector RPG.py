@@ -22,39 +22,39 @@ class Main:
         self.load_data()
         self.new()
 
-    def align_rect(self, surface, x, y, align):
+    def align_rect(self, surface, pos, align):
         rect = surface.get_rect()
         if align == "nw":
-            rect.topleft = (x, y)
+            rect.topleft = pos
         if align == "ne":
-            rect.topright = (x, y)
+            rect.topright = pos
         if align == "sw":
-            rect.bottomleft = (x, y)
+            rect.bottomleft = pos
         if align == "se":
-            rect.bottomright = (x, y)
+            rect.bottomright = pos
         if align == "n":
-            rect.midtop = (x, y)
+            rect.midtop = pos
         if align == "s":
-            rect.midbottom = (x, y)
+            rect.midbottom = pos
         if align == "e":
-            rect.midright = (x, y)
+            rect.midright = pos
         if align == "w":
-            rect.midleft = (x, y)
+            rect.midleft = pos
         if align == "center":
-            rect.center = (x, y)
+            rect.center = pos
         return rect
 
     def draw_text(self, text, font, color, pos, align="nw"):
         if not isinstance(text, str):
             text = str(text)
         text_surface = font.render(text, True, color)
-        text_rect = self.align_rect(text_surface, int(pos[0]), int(pos[1]), align)
+        text_rect = self.align_rect(text_surface, pos, align)
         if self.debug_mode:
             pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
         self.gameDisplay.blit(text_surface, text_rect)
 
-    def draw_image(self, image, x, y, align="nw"):
-        image_rect = self.align_rect(image, x, y, align)
+    def draw_image(self, image, pos, align="nw"):
+        image_rect = self.align_rect(image, pos, align)
         self.gameDisplay.blit(image, image_rect)
 
     def load_data(self):
@@ -189,7 +189,7 @@ class Main:
         # Pause ----------------------- #
         if self.paused:
             self.gameDisplay.blit(self.dim_screen, (0, 0))
-            self.draw_text("Paused", self.font, RED, (WIDTH / 2, HEIGHT / 2), align="center")
+            self.draw_text("Paused", self.font, RED, (WIDTH // 2, HEIGHT // 2), align="center")
 
         # Update ---------------------- #
         self.gameDisplay.update(self.event)

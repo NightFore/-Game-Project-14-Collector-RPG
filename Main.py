@@ -54,17 +54,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         update_time_dependent(self)
-        Test = False
-        if Test:
-            if True:
-                self.update_move()
-            if True:
-                self.get_keys()
-            update_center(self)
-            update_bobbing(self)
-
-    def update_move(self):
-        pass
+        self.main.align_rect(self.surface, self.pos, self.align)
 
 
 
@@ -129,12 +119,12 @@ MAIN_DICT = {
         "settings": {
             "character": {
                 "pos": [640, 360], "align": "center",
-                "animation_time": 0.50, "animation_loop": True, "animation_reverse": True
+                "animation_time": 0.25, "animation_loop": True, "animation_reverse": True
             }
         },
         "character": {
             "player": {
-                "image": "sprite_Kaduki_Actor63.png", "size": [32, 32]
+                "image": "sprite_Kaduki_Actor63.png", "size": [32, 32], "scaled_size": [64, 64]
             }
         }
     },

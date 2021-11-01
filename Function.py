@@ -48,7 +48,7 @@ def init_sprite_text(self, text=None):
     else:
         self.text = None
         print("Text not initialized")
-    self.text_pos = self.rect[0] + self.rect[2] / 2, self.rect[1] + self.rect[3] / 2
+    self.text_pos = self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2
 
     # Align
     if "text_align" in self.object:
@@ -106,7 +106,7 @@ def init_sprite_surface(self):
         self.border_color = self.settings["border_color"]
     self.surface = pygame.Surface(self.size)
     self.surface_rect = (self.border_size[0], self.border_size[1], self.size[0] - 2*self.border_size[0], self.size[1] - 2*self.border_size[1])
-    self.rect = self.main.align_rect(self.surface, self.pos[0], self.pos[1], self.align)
+    self.rect = self.main.align_rect(self.surface, self.pos, self.align)
 
 def init_surface(surface, surface_rect, color, border_color=None):
     surface = surface.copy()
@@ -130,13 +130,17 @@ def init_sprite_image(self):
     self.animation_loop = self.settings["animation_loop"]
     self.animation_reverse = self.settings["animation_reverse"]
 
-    # New
+    # Image
     self.index_table, self.index_image = 0, 0
     self.images = self.image_table[self.index_table]
+    if "scaled_size" in self.object:
+        scale_sprite_image(self, self.object["scaled_size"])
     self.image = self.images[self.index_image]
+
+    # Surface & Rect
     self.surface = self.image
     self.surface_rect = self.surface.get_rect()
-    self.rect = self.main.align_rect(self.surface, self.pos[0], self.pos[1], self.align)
+    self.rect = self.main.align_rect(self.surface, self.pos, self.align)
 
     # Animation
     self.dt = self.main.dt
@@ -144,6 +148,14 @@ def init_sprite_image(self):
     self.loop_count = 0
     self.index_loop = 0
     self.index_increment = 1
+
+
+def scale_sprite_image(self, scaled_size):
+    self.scaled_size = scaled_size
+    for table in range(len(self.image_table)):
+        for image in range(len(self.image_table[table])):
+            self.image_table[table][image] = pygame.transform.scale(self.image_table[table][image], self.scaled_size)
+
 
 def update_time_dependent(self):
     self.current_time += self.dt
@@ -166,7 +178,7 @@ def update_time_dependent(self):
 
 
 """
-    Others
+    Sprite (Rect)
 """
 def update_sprite_rect(self, x=None, y=None):
     if x is None:
@@ -234,11 +246,6 @@ def update_move(sprite, dx=None, dy=None):
         sprite.pos.x += dx
         sprite.pos.y += dy
     update_rect(sprite)
-
-def update_center(sprite):
-    if sprite.center:
-        sprite.rect = sprite.image.get_rect()
-        sprite.rect.center = sprite.pos
 
 def update_bobbing(sprite):
     if sprite.bobbing:
