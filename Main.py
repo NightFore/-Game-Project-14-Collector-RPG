@@ -41,9 +41,15 @@ class Player(pygame.sprite.Sprite):
 
     def init(self):
         init_sprite_image_animated(self)
+        init_sprite_text(self)
 
     def load(self):
-        pass
+        self.max_health = self.object["max_health"]
+        self.current_health = self.max_health
+        self.max_bp = self.object["max_bp"]
+        self.bp = self.max_bp
+        self.strength = self.object["strength"]
+        self.speed = self.object["speed"]
 
     def new(self):
         self.check = {"weapon_1": True}
@@ -58,7 +64,12 @@ class Player(pygame.sprite.Sprite):
             Weapon(self.main, self.game.weapons, self.dict, data="weapon", item="sword_001", parent=self)
 
     def draw(self):
+        # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
+
+        # Text
+        self.text_health = "HP %i / %i" % (self.current_health, self.max_health)
+        self.main.draw_text(self.text_health, self.font, self.font_color, self.text_pos, self.text_align)
 
     def update(self):
         self.get_keys()
@@ -75,7 +86,12 @@ class Enemy(pygame.sprite.Sprite):
         init_sprite_image(self, self.main.graphic_folder)
 
     def load(self):
-        pass
+        self.max_health = self.object["max_health"]
+        self.current_health = self.max_health
+        self.max_bp = self.object["max_bp"]
+        self.bp = self.max_bp
+        self.strength = self.object["strength"]
+        self.speed = self.object["speed"]
 
     def new(self):
         pass
@@ -99,7 +115,8 @@ class Weapon(pygame.sprite.Sprite):
         init_sprite_image(self, self.main.item_folder)
 
     def load(self):
-        update_sprite_rect(self, self.parent.pos[0], self.parent.pos[1])
+        self.pos = self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2
+        update_sprite_rect(self, self.pos[0], self.pos[1])
 
     def new(self):
         pass
@@ -178,17 +195,25 @@ MAIN_DICT = {
     "game": {
         "settings": {
             "character": {
-                "pos": [640, 360], "align": "center",
-                "animation_time": 0.25, "animation_loop": True, "animation_reverse": True
+                "pos": [1130, 590], "align": "s",
+                "text_pos": [990, 240], "text_align": "nw",
+                "text": None, "font": "LiberationSerif", "font_color": WHITE,
+                "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
-            "enemy": {"pos": [320, 360], "align": "center"},
+            "enemy": {"pos": [200, 590], "align": "s"},
             "sword": {"align": "center"}
         },
         "character": {
-            "player": {"image": "sprite_Kaduki_Actor63.png", "size": [32, 32], "scale_size": [64, 64]},
+            "player": {
+                "image": "sprite_Kaduki_Actor63_1.png", "size": [32, 32], "scale_size": [96, 96],
+                "max_health": 50, "max_bp": 10, "strength": 5, "speed": 2
+            },
         },
         "enemy": {
-            "magician": {"image": "mon_018_magician_female.bmp", "color_key": (129, 121, 125)}
+            "magician": {
+                "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
+                "max_health": 60, "max_bp": 12, "strength": 3, "speed": 1
+            }
         },
         "weapon": {
             "sword_001": {

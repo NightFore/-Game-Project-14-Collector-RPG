@@ -38,12 +38,8 @@ class Button(pygame.sprite.Sprite):
                 self.action = eval(self.object["action"])
 
     def draw(self):
-        # Surface
         self.main.gameDisplay.blit(self.surface, self.rect)
-
-        # Text
-        if self.text is not None and self.font is not None:
-            self.main.draw_text(self.text, self.font, self.font_color, self.text_pos, self.text_align)
+        self.main.draw_text(self.text, self.font, self.font_color, self.text_pos, self.text_align)
 
     def update(self):
         # Collision

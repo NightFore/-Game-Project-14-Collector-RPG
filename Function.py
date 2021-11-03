@@ -48,7 +48,12 @@ def init_sprite_text(self, text=None):
     else:
         self.text = None
         print("Text not initialized")
-    self.text_pos = self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2
+    if "text_pos" in self.object:
+        self.text_pos = self.object["text_pos"]
+    if "text_pos" in self.settings:
+        self.text_pos = self.settings["text_pos"]
+    else:
+        self.text_pos = self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2
 
     # Align
     if "text_align" in self.object:

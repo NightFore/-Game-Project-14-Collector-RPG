@@ -46,13 +46,14 @@ class Main:
         return rect
 
     def draw_text(self, text, font, color, pos, align="nw"):
-        if not isinstance(text, str):
-            text = str(text)
-        text_surface = font.render(text, True, color)
-        text_rect = self.align_rect(text_surface, pos, align)
-        if self.debug_mode:
-            pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
-        self.gameDisplay.blit(text_surface, text_rect)
+        if text is not None and font is not None:
+            if not isinstance(text, str):
+                text = str(text)
+            text_surface = font.render(text, True, color)
+            text_rect = self.align_rect(text_surface, pos, align)
+            if self.debug_mode:
+                pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
+            self.gameDisplay.blit(text_surface, text_rect)
 
     def load_data(self):
         # Main settings
