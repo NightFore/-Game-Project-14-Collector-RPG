@@ -122,9 +122,16 @@ def init_surface(surface, surface_rect, color, border_color=None):
 """
 def init_sprite_image(self, image_dir):
     # Load
-    self.pos = self.settings["pos"]
+    if "pos" in self.settings:
+        self.pos = self.settings["pos"]
+    else:
+        self.pos = [0, 0]
     self.align = self.settings["align"]
-    self.image = load_image(image_dir, self.object["image"])
+    if "color_key" in self.object:
+        self.color_key = self.object["color_key"]
+    else:
+        self.color_key = None
+    self.image = load_image(image_dir, self.object["image"], self.color_key)
 
     # Surface & Rect
     self.size = self.image.get_size()
@@ -144,16 +151,19 @@ def init_sprite_image_animated(self):
     self.pos = self.settings["pos"]
     self.align = self.settings["align"]
     self.size = self.object["size"]
-    self.image_table = load_tile_table(path.join(self.main.graphic_folder, self.object["image"]), self.size[0], self.size[1])
+    if "color_key" in self.object:
+        self.color_key = self.object["color_key"]
+    else:
+        self.color_key = None
+    self.image_table = load_tile_table(path.join(self.main.graphic_folder, self.object["image"]), self.size[0], self.size[1], self.color_key)
     self.animation_time = self.settings["animation_time"]
     self.animation_loop = self.settings["animation_loop"]
     self.animation_reverse = self.settings["animation_reverse"]
 
     # Image
+    scale_sprite_image(self)
     self.index_table, self.index_image = 0, 0
     self.images = self.image_table[self.index_table]
-    if "scaled_size" in self.object:
-        scale_sprite_image(self, self.object["scaled_size"])
     self.image = self.images[self.index_image]
 
     # Surface & Rect
@@ -169,8 +179,9 @@ def init_sprite_image_animated(self):
     self.index_increment = 1
 
 
-def scale_sprite_image(self, scaled_size):
-    self.scaled_size = scaled_size
+def scale_sprite_image(self):
+    if "scaled_size" in self.object:
+        self.scaled_size = self.object["scaled_size"]
     for table in range(len(self.image_table)):
         for image in range(len(self.image_table[table])):
             self.image_table[table][image] = pygame.transform.scale(self.image_table[table][image], self.scaled_size)
@@ -206,6 +217,61 @@ def update_sprite_rect(self, x=None, y=None):
         y = self.pos[1]
     self.pos = (x, y)
     self.rect = self.main.align_rect(self.surface, self.pos, self.align)
+
+
+
+
+
+"""
+    Image
+"""
+def convert_image(image, color_key):
+    if color_key is not None:
+        image = image.convert()
+        image.set_colorkey(color_key)
+    else:
+        image = image.convert_alpha()
+    return image
+
+def load_image(image_path, image_dir, color_key=None):
+    if isinstance(image_dir, list):
+        images = []
+        for image in image_dir:
+            image = pygame.image.load(path.join(image_path, image))
+            images.append(convert_image(image, color_key))
+        return images
+    else:
+        image = pygame.image.load(path.join(image_path, image_dir))
+        return convert_image(image, color_key)
+
+
+def load_tile_table(filename, width, height, color_key=None, reverse=False):
+    if color_key is None:
+        image = pygame.image.load(filename).convert_alpha()
+    else:
+        image = pygame.image.load(filename).convert()
+        image.set_colorkey(color_key)
+    image_width, image_height = image.get_size()
+    tile_table = []
+    if not reverse:
+        for tile_y in range(int(image_height / height)):
+            line = []
+            tile_table.append(line)
+            for tile_x in range(int(image_width / width)):
+                rect = (tile_x * width, tile_y * height, width, height)
+                line.append(image.subsurface(rect))
+    else:
+        for tile_x in range(int(image_width / width)):
+            column = []
+            tile_table.append(column)
+            for tile_y in range(int(image_height / height)):
+                rect = (tile_x * width, tile_y * height, width, height)
+                column.append(image.subsurface(rect))
+    return tile_table
+
+
+
+
 
 
 
@@ -298,38 +364,6 @@ def load_file(path, image=False):
         else:
             file.append(path + os.sep + file_name)
     return file
-
-
-def load_image(image_path, image_dir):
-    if isinstance(image_dir, list):
-        images = []
-        for image in image_dir:
-            images.append(pygame.image.load(path.join(image_path, image)).convert_alpha())
-        return images
-    else:
-        return pygame.image.load(path.join(image_path, image_dir)).convert_alpha()
-
-
-def load_tile_table(filename, width, height, reverse=False, color_key=(0, 0, 0)):
-    image = pygame.image.load(filename).convert_alpha()
-    image.set_colorkey(color_key)
-    image_width, image_height = image.get_size()
-    tile_table = []
-    if not reverse:
-        for tile_y in range(int(image_height / height)):
-            line = []
-            tile_table.append(line)
-            for tile_x in range(int(image_width / width)):
-                rect = (tile_x * width, tile_y * height, width, height)
-                line.append(image.subsurface(rect))
-    else:
-        for tile_x in range(int(image_width / width)):
-            column = []
-            tile_table.append(column)
-            for tile_y in range(int(image_height / height)):
-                rect = (tile_x * width, tile_y * height, width, height)
-                column.append(image.subsurface(rect))
-    return tile_table
 
 
 def transparent_surface(width, height, color, border, color_key=(0, 0, 0)):

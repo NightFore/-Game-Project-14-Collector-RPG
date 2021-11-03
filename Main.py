@@ -30,7 +30,6 @@ class Game:
 
     def use_weapon(self):
         print(self.weapons)
-        print("Use Weapon WIP")
 
 
 class Player(pygame.sprite.Sprite):
@@ -72,10 +71,9 @@ class Weapon(pygame.sprite.Sprite):
 
     def init(self):
         init_sprite_image(self, self.main.item_folder)
-        print("ok_1")
 
     def load(self):
-        update_sprite_rect(self, self.parent.pos[0], self.parent.pos[1])
+        update_sprite_rect(self, self.parent.pos[0] - 50, self.parent.pos[1])
 
     def new(self):
         pass
@@ -155,7 +153,7 @@ MAIN_DICT = {
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True
             },
             "sword": {
-                "pos": [0, 0], "align": "center", "size": [0, 0]
+                "align": "center"
             }
         },
         "character": {
@@ -166,7 +164,7 @@ MAIN_DICT = {
         "weapon": {
             "sword_001": {
                 "type": "sword",
-                "image": "item_WhiteCat_we_sword002.png"
+                "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196)
             }
         }
     },
