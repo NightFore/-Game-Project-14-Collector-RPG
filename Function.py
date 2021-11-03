@@ -47,7 +47,8 @@ def init_sprite_text(self, text=None):
         self.text = self.settings["text"]
     else:
         self.text = None
-        print("Text not initialized")
+
+    # Pos
     if "text_pos" in self.object:
         self.text_pos = self.object["text_pos"]
     if "text_pos" in self.settings:

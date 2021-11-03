@@ -15,8 +15,8 @@ class Game:
         self.init_game()
 
     def init_game(self):
-        self.player = pygame.sprite.Group()
-        self.enemy = pygame.sprite.Group()
+        self.characters = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
         self.weapons = pygame.sprite.Group()
 
     def draw(self):
@@ -27,11 +27,11 @@ class Game:
 
     def new_game(self):
         self.main.update_menu("battle_menu")
-        self.player = Player(self.main, self.player, self.game_dict, data="character", item="player")
-        self.enemy = Enemy(self.main, self.enemy, self.game_dict, data="enemy", item="magician")
+        self.player = Player(self.main, self.characters, self.game_dict, data="character", item="player")
+        self.enemy = Enemy(self.main, self.enemies, self.game_dict, data="enemy", item="magician")
 
-    def use_weapon(self):
-        print(self.weapons)
+    def use_weapon(self, index):
+        self.player.use_weapon(index)
 
 
 class Player(pygame.sprite.Sprite):
@@ -50,18 +50,17 @@ class Player(pygame.sprite.Sprite):
         self.bp = self.max_bp
         self.strength = self.object["strength"]
         self.speed = self.object["speed"]
+        self.weapons = ["sword_002", "sword_008", "sword_018", "spear_006", "axe_002"]
 
     def new(self):
-        self.check = {"weapon_1": True}
+        pass
 
     def get_keys(self):
         # Initialization
         keys = pygame.key.get_pressed()
-        if not keys[pygame.K_LEFT]:
-            self.check["weapon_1"] = True
-        elif self.check["weapon_1"]:
-            self.check["weapon_1"] = False
-            Weapon(self.main, self.game.weapons, self.dict, data="weapon", item="sword_001", parent=self)
+
+    def use_weapon(self, index):
+        Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
 
     def draw(self):
         # Surface
@@ -176,9 +175,9 @@ MAIN_DICT = {
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
-            "weapon_icon": {
-                "align": "nw", "size": (50, 50),
-                "border": True, "border_size": (5, 5), "border_color": BLACK,
+            "weapon_button": {
+                "align": "center", "size": (130, 94),
+                "border": True, "border_size": (6, 6), "border_color": BLACK,
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
@@ -189,18 +188,22 @@ MAIN_DICT = {
             "exit": {"type": "default", "pos": (20, 160), "text": "Exit", "action": "self.main.quit_game"},
         },
         "battle_menu": {
-            "weapon_button": {"type": "weapon_icon", "pos": (20, 20), "text": None, "action": "self.game.use_weapon"},
-        }
+            "weapon_button_0": {"type": "weapon_button", "pos": (320, 655), "variable": 0, "action": "self.game.use_weapon"},
+            "weapon_button_1": {"type": "weapon_button", "pos": (480, 655), "variable": 1, "action": "self.game.use_weapon"},
+            "weapon_button_2": {"type": "weapon_button", "pos": (640, 655), "variable": 2, "action": "self.game.use_weapon"},
+            "weapon_button_3": {"type": "weapon_button", "pos": (800, 655), "variable": 3, "action": "self.game.use_weapon"},
+            "weapon_button_4": {"type": "weapon_button", "pos": (960, 655), "variable": 4, "action": "self.game.use_weapon"},
+        },
     },
     "game": {
         "settings": {
             "character": {
-                "pos": [1130, 590], "align": "s",
+                "pos": [1130, 585], "align": "s",
                 "text_pos": [990, 240], "text_align": "nw",
                 "text": None, "font": "LiberationSerif", "font_color": WHITE,
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
-            "enemy": {"pos": [200, 590], "align": "s"},
+            "enemy": {"pos": [200, 585], "align": "s"},
             "sword": {"align": "center"}
         },
         "character": {
@@ -216,10 +219,12 @@ MAIN_DICT = {
             }
         },
         "weapon": {
-            "sword_001": {
-                "type": "sword",
-                "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48]
-            }
+            "sword_002": {"type": "sword", "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+            "sword_008": {"type": "sword", "image": "item_WhiteCat_we_sword008.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+            "sword_018": {"type": "sword", "image": "item_WhiteCat_we_sword018.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+            "spear_006": {"type": "sword", "image": "item_WhiteCat_we_spear006.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+            "axe_002": {"type": "sword", "image": "item_WhiteCat_we_axe002.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+
         }
     },
 }

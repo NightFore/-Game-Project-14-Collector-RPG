@@ -24,6 +24,10 @@ class Button(pygame.sprite.Sprite):
         self.sound_active = self.settings["sound_active"]
         self.sound_inactive = self.settings["sound_inactive"]
 
+        # Variable
+        if self.variable is None and "variable" in self.object:
+            self.variable = self.object["variable"]
+
     def new(self):
         # Surface
         self.surface_active = init_surface(self.surface, self.surface_rect, self.active_color, self.border_color)
