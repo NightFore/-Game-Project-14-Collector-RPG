@@ -24,6 +24,7 @@ class Main:
 
     def align_rect(self, surface, pos, align):
         rect = surface.get_rect()
+        pos = (int(pos[0]), int(pos[1]))
         if align == "nw":
             rect.topleft = pos
         if align == "ne":
@@ -52,10 +53,6 @@ class Main:
         if self.debug_mode:
             pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
         self.gameDisplay.blit(text_surface, text_rect)
-
-    def draw_image(self, image, pos, align="nw"):
-        image_rect = self.align_rect(image, pos, align)
-        self.gameDisplay.blit(image, image_rect)
 
     def load_data(self):
         # Main settings

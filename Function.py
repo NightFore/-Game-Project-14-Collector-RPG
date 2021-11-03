@@ -131,7 +131,12 @@ def init_sprite_image(self, image_dir):
         self.color_key = self.object["color_key"]
     else:
         self.color_key = None
+
+    # Image
     self.image = load_image(image_dir, self.object["image"], self.color_key)
+    if "scale_size" in self.object:
+        self.scale_size = self.object["scale_size"]
+        self.image = pygame.transform.scale(self.image, self.scale_size)
 
     # Surface & Rect
     self.size = self.image.get_size()
@@ -161,7 +166,11 @@ def init_sprite_image_animated(self):
     self.animation_reverse = self.settings["animation_reverse"]
 
     # Image
-    scale_sprite_image(self)
+    if "scale_size" in self.object:
+        self.scale_size = self.object["scale_size"]
+        for table in range(len(self.image_table)):
+            for image in range(len(self.image_table[table])):
+                self.image_table[table][image] = pygame.transform.scale(self.image_table[table][image], self.scale_size)
     self.index_table, self.index_image = 0, 0
     self.images = self.image_table[self.index_table]
     self.image = self.images[self.index_image]
@@ -177,14 +186,6 @@ def init_sprite_image_animated(self):
     self.loop_count = 0
     self.index_loop = 0
     self.index_increment = 1
-
-
-def scale_sprite_image(self):
-    if "scaled_size" in self.object:
-        self.scaled_size = self.object["scaled_size"]
-    for table in range(len(self.image_table)):
-        for image in range(len(self.image_table[table])):
-            self.image_table[table][image] = pygame.transform.scale(self.image_table[table][image], self.scaled_size)
 
 
 def update_time_dependent(self):
@@ -215,8 +216,8 @@ def update_sprite_rect(self, x=None, y=None):
         x = self.pos[0]
     if y is None:
         y = self.pos[1]
-    self.pos = (x, y)
-    self.rect = self.main.align_rect(self.surface, self.pos, self.align)
+    self.pos = [x, y]
+    self.rect = self.main.align_rect(self.surface, (int(self.pos[0]), int(self.pos[1])), self.align)
 
 
 
@@ -316,7 +317,7 @@ def collide_with_walls(sprite, group):
     sprite.rect.center = sprite.hit_rect.center
 
 def collide_hit_rect(one, two):
-    return one.hit_rect.colliderect(two.rect)
+    return one.rect.colliderect(two.rect)
 
 
 
