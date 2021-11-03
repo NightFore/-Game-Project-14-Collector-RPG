@@ -18,6 +18,7 @@ class Game:
         self.characters = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.weapons = pygame.sprite.Group()
+        self.weapon_buttons = pygame.sprite.Group()
 
     def draw(self):
         pass
@@ -27,6 +28,8 @@ class Game:
 
     def new_game(self):
         self.main.update_menu("battle_menu")
+        for button in self.main.button_dict["weapon_buttons"]:
+            Button(self.main, self.weapon_buttons, self.main.button_dict, data="weapon_buttons", item=button)
         self.player = Player(self.main, self.characters, self.game_dict, data="character", item="player")
         self.enemy = Enemy(self.main, self.enemies, self.game_dict, data="enemy", item="magician")
 
@@ -51,6 +54,14 @@ class Player(pygame.sprite.Sprite):
         self.strength = self.object["strength"]
         self.speed = self.object["speed"]
         self.weapons = ["sword_002", "sword_008", "sword_018", "spear_006", "axe_002"]
+
+        self.weapon_dict = self.dict["weapon"]
+        self.weapon_images = []
+        for index in range(len(self.weapons)):
+            weapon = self.weapon_dict[self.weapons[index]]
+            self.weapon_images.append(load_image(self.main.item_folder, weapon["image"], weapon["color_key"], weapon["scale_size"]))
+        for index, button in enumerate(self.game.weapon_buttons):
+            update_sprite_image(button, self.weapon_images[index], "center")
 
     def new(self):
         pass
@@ -183,16 +194,19 @@ MAIN_DICT = {
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
         },
         "main_menu": {
-            "new_game": {"type": "default", "pos": (20, 20), "text": "New Game", "action": "self.game.new_game"},
-            "select_level": {"type": "default", "pos": (20, 90), "text": "Select Level", "action": None},
-            "exit": {"type": "default", "pos": (20, 160), "text": "Exit", "action": "self.main.quit_game"},
+            "new_game": {"settings": "default", "pos": (20, 20), "text": "New Game", "action": "self.game.new_game"},
+            "select_level": {"settings": "default", "pos": (20, 90), "text": "Select Level", "action": None},
+            "exit": {"settings": "default", "pos": (20, 160), "text": "Exit", "action": "self.main.quit_game"},
         },
         "battle_menu": {
-            "weapon_button_0": {"type": "weapon_button", "pos": (320, 655), "variable": 0, "action": "self.game.use_weapon"},
-            "weapon_button_1": {"type": "weapon_button", "pos": (480, 655), "variable": 1, "action": "self.game.use_weapon"},
-            "weapon_button_2": {"type": "weapon_button", "pos": (640, 655), "variable": 2, "action": "self.game.use_weapon"},
-            "weapon_button_3": {"type": "weapon_button", "pos": (800, 655), "variable": 3, "action": "self.game.use_weapon"},
-            "weapon_button_4": {"type": "weapon_button", "pos": (960, 655), "variable": 4, "action": "self.game.use_weapon"},
+
+        },
+        "weapon_buttons": {
+            "weapon_button_0": {"settings": "weapon_button", "pos": (320, 655), "variable": 0, "action": "self.game.use_weapon"},
+            "weapon_button_1": {"settings": "weapon_button", "pos": (480, 655), "variable": 1, "action": "self.game.use_weapon"},
+            "weapon_button_2": {"settings": "weapon_button", "pos": (640, 655), "variable": 2, "action": "self.game.use_weapon"},
+            "weapon_button_3": {"settings": "weapon_button", "pos": (800, 655), "variable": 3, "action": "self.game.use_weapon"},
+            "weapon_button_4": {"settings": "weapon_button", "pos": (960, 655), "variable": 4, "action": "self.game.use_weapon"},
         },
     },
     "game": {
@@ -204,7 +218,6 @@ MAIN_DICT = {
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
             "enemy": {"pos": [200, 585], "align": "s"},
-            "sword": {"align": "center"}
         },
         "character": {
             "player": {
@@ -219,11 +232,26 @@ MAIN_DICT = {
             }
         },
         "weapon": {
-            "sword_002": {"type": "sword", "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
-            "sword_008": {"type": "sword", "image": "item_WhiteCat_we_sword008.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
-            "sword_018": {"type": "sword", "image": "item_WhiteCat_we_sword018.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
-            "spear_006": {"type": "sword", "image": "item_WhiteCat_we_spear006.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
-            "axe_002": {"type": "sword", "image": "item_WhiteCat_we_axe002.png", "color_key": (50, 201, 196), "scale_size": [48, 48]},
+            "sword_002": {
+                "type": "sword", "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
+                "damage": 5, "bp_cost": 3
+            },
+            "sword_008": {
+                "type": "sword", "image": "item_WhiteCat_we_sword008.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
+                "damage": 7, "bp_cost": 4
+            },
+            "sword_018": {
+                "type": "sword", "image": "item_WhiteCat_we_sword018.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
+                "damage": 10, "bp_cost": 5
+            },
+            "spear_006": {
+                "type": "spear", "image": "item_WhiteCat_we_spear006.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
+                "damage": 12, "bp_cost": 5
+            },
+            "axe_002": {
+                "type": "axe", "image": "item_WhiteCat_we_axe002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
+                "damage": 15, "bp_cost": 7
+            },
 
         }
     },

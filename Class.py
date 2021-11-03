@@ -15,6 +15,12 @@ class Button(pygame.sprite.Sprite):
         init_sprite_text(self)
 
     def load(self):
+        # Image
+        if "image" in self.object:
+            self.image = self.object["image"]
+        else:
+            self.image = None
+
         # Surface
         self.active_color = self.settings["active_color"]
         self.inactive_color = self.settings["inactive_color"]
@@ -43,6 +49,8 @@ class Button(pygame.sprite.Sprite):
 
     def draw(self):
         self.main.gameDisplay.blit(self.surface, self.rect)
+        if self.image is not None:
+            self.main.gameDisplay.blit(self.image, self.image_rect)
         self.main.draw_text(self.text, self.font, self.font_color, self.text_pos, self.text_align)
 
     def update(self):

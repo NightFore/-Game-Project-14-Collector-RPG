@@ -22,10 +22,12 @@ def init_sprite(self, main, group, dict, data, item, parent, variable, action):
     self.data = data
     self.item = item
     self.object = self.dict[self.data][self.item]
-    if "type" in self.object:
-        self.settings = self.dict["settings"][self.object["type"]]
-    else:
+    if "settings" in self.object:
+        self.settings = self.dict["settings"][self.object["settings"]]
+    elif self.data in self.dict["settings"]:
         self.settings = self.dict["settings"][self.data]
+    else:
+        self.settings = {}
 
     # Variable
     self.parent = parent
@@ -127,22 +129,28 @@ def init_surface(surface, surface_rect, color, border_color=None):
     Sprite (Fix)
 """
 def init_sprite_image(self, image_dir):
-    # Load
+    # Pos
     if "pos" in self.settings:
         self.pos = self.settings["pos"]
     else:
         self.pos = [0, 0]
-    self.align = self.settings["align"]
+
+    # Align
+    if "align" in self.settings:
+        self.align = self.settings["align"]
+    else:
+        self.align = "center"
+
+    # Color Key
     if "color_key" in self.object:
         self.color_key = self.object["color_key"]
     else:
         self.color_key = None
 
     # Image
-    self.image = load_image(image_dir, self.object["image"], self.color_key)
     if "scale_size" in self.object:
         self.scale_size = self.object["scale_size"]
-        self.image = pygame.transform.scale(self.image, self.scale_size)
+    self.image = load_image(image_dir, self.object["image"], self.color_key, self.scale_size)
 
     # Surface & Rect
     self.size = self.image.get_size()
@@ -226,7 +234,14 @@ def update_sprite_rect(self, x=None, y=None):
     self.rect = self.main.align_rect(self.surface, (int(self.pos[0]), int(self.pos[1])), self.align)
 
 
-
+def update_sprite_image(self, image, align=None):
+    self.image = image
+    if align is not None:
+        self.image_align = align
+    else:
+        self.image_align = self.align
+    self.image_rect = self.image.get_rect()
+    self.image_rect = self.main.align_rect(self.image, self.pos, self.image_align)
 
 
 """
@@ -240,15 +255,19 @@ def convert_image(image, color_key):
         image = image.convert_alpha()
     return image
 
-def load_image(image_path, image_dir, color_key=None):
+def load_image(image_path, image_dir, color_key=None, scale_size=None):
     if isinstance(image_dir, list):
         images = []
         for image in image_dir:
             image = pygame.image.load(path.join(image_path, image))
+            if scale_size is not None:
+                image = pygame.transform.scale(image, scale_size)
             images.append(convert_image(image, color_key))
         return images
     else:
         image = pygame.image.load(path.join(image_path, image_dir))
+        if scale_size is not None:
+            image = pygame.transform.scale(image, scale_size)
         return convert_image(image, color_key)
 
 
