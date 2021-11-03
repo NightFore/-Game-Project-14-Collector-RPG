@@ -118,9 +118,28 @@ def init_surface(surface, surface_rect, color, border_color=None):
 
 
 """
+    Sprite (Fix)
+"""
+def init_sprite_image(self, image_dir):
+    # Load
+    self.pos = self.settings["pos"]
+    self.align = self.settings["align"]
+    self.image = load_image(image_dir, self.object["image"])
+
+    # Surface & Rect
+    self.size = self.image.get_size()
+    self.surface = self.image
+    self.surface_rect = self.surface.get_rect()
+    self.rect = self.main.align_rect(self.surface, self.pos, self.align)
+
+
+
+
+
+"""
     Sprite (Animated)
 """
-def init_sprite_image(self):
+def init_sprite_image_animated(self):
     # Load
     self.pos = self.settings["pos"]
     self.align = self.settings["align"]
@@ -186,7 +205,7 @@ def update_sprite_rect(self, x=None, y=None):
     if y is None:
         y = self.pos[1]
     self.pos = (x, y)
-    self.rect = self.main.align_rect(self.surface, int(self.pos[0]), int(self.pos[1]), self.align)
+    self.rect = self.main.align_rect(self.surface, self.pos, self.align)
 
 
 

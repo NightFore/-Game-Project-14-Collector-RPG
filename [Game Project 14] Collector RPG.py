@@ -67,6 +67,7 @@ class Main:
         self.game_folder = path.dirname(__file__)
         self.data_folder = path.join(self.game_folder, "data")
         self.graphic_folder = path.join(self.data_folder, "graphic")
+        self.item_folder = path.join(self.data_folder, "item")
         self.se_folder = path.join(self.data_folder, "sound")
         self.music_folder = path.join(self.data_folder, "music")
         self.map_folder = path.join(self.data_folder, "map")
@@ -100,11 +101,7 @@ class Main:
 
     def new(self):
         self.all_sprites = pygame.sprite.LayeredUpdates()
-        self.uis = pygame.sprite.Group()
         self.buttons = pygame.sprite.Group()
-        self.player = pygame.sprite.Group()
-        self.entities = pygame.sprite.Group()
-        self.walls = pygame.sprite.Group()
 
     def init_main(self):
         self.debug_color = CYAN

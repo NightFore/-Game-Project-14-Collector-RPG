@@ -15,7 +15,8 @@ class Game:
         self.init_game()
 
     def init_game(self):
-        pass
+        self.player = pygame.sprite.Group()
+        self.weapons = pygame.sprite.Group()
 
     def draw(self):
         pass
@@ -25,9 +26,10 @@ class Game:
 
     def new_game(self):
         self.main.update_menu("battle_menu")
-        self.player = Player(self.main, self.main.player, self.game_dict, data="character", item="player")
+        self.player = Player(self.main, self.player, self.game_dict, data="character", item="player")
 
     def use_weapon(self):
+        print(self.weapons)
         print("Use Weapon WIP")
 
 
@@ -37,24 +39,55 @@ class Player(pygame.sprite.Sprite):
         init_sprite(self, main, group, dict, data, item, parent, variable, action)
 
     def init(self):
-        init_sprite_image(self)
+        init_sprite_image_animated(self)
 
     def load(self):
         pass
 
     def new(self):
-        pass
+        self.check = {"weapon_1": True}
 
     def get_keys(self):
         # Initialization
         keys = pygame.key.get_pressed()
+        if not keys[pygame.K_LEFT]:
+            self.check["weapon_1"] = True
+        elif self.check["weapon_1"]:
+            self.check["weapon_1"] = False
+            Weapon(self.main, self.game.weapons, self.dict, data="weapon", item="sword_001", parent=self)
 
     def draw(self):
         self.main.gameDisplay.blit(self.image, self.rect)
 
     def update(self):
+        self.get_keys()
         update_time_dependent(self)
         self.main.align_rect(self.surface, self.pos, self.align)
+
+
+class Weapon(pygame.sprite.Sprite):
+    def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
+        # Initialization -------------- #
+        init_sprite(self, main, group, dict, data, item, parent, variable, action)
+
+    def init(self):
+        init_sprite_image(self, self.main.item_folder)
+        print("ok_1")
+
+    def load(self):
+        update_sprite_rect(self, self.parent.pos[0], self.parent.pos[1])
+
+    def new(self):
+        pass
+
+    def get_keys(self):
+        pass
+
+    def draw(self):
+        self.main.gameDisplay.blit(self.image, self.rect)
+
+    def update(self):
+        pass
 
 
 
@@ -120,11 +153,20 @@ MAIN_DICT = {
             "character": {
                 "pos": [640, 360], "align": "center",
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True
+            },
+            "sword": {
+                "pos": [0, 0], "align": "center", "size": [0, 0]
             }
         },
         "character": {
             "player": {
                 "image": "sprite_Kaduki_Actor63.png", "size": [32, 32], "scaled_size": [64, 64]
+            }
+        },
+        "weapon": {
+            "sword_001": {
+                "type": "sword",
+                "image": "item_WhiteCat_we_sword002.png"
             }
         }
     },
