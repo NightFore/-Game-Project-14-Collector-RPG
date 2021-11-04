@@ -56,7 +56,7 @@ def init_sprite_text(self, text=None):
     if "text_pos" in self.settings:
         self.text_pos = self.settings["text_pos"]
     else:
-        self.text_pos = self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2
+        self.text_pos = [self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2]
     if "line_offset" in self.settings:
         self.line_offset = self.settings["line_offset"]
 
@@ -160,6 +160,9 @@ def init_sprite_image(self, image_dir):
     self.surface_rect = self.surface.get_rect()
     self.rect = self.main.align_rect(self.surface, self.pos, self.align)
 
+    # Time
+    self.dt = self.main.dt
+
 
 
 
@@ -196,7 +199,7 @@ def init_sprite_image_animated(self):
     self.surface_rect = self.surface.get_rect()
     self.rect = self.main.align_rect(self.surface, self.pos, self.align)
 
-    # Animation
+    # Time & Animation
     self.dt = self.main.dt
     self.current_time = 0
     self.loop_count = 0
@@ -301,10 +304,20 @@ def load_tile_table(filename, width, height, color_key=None, reverse=False):
 
 
 
+"""
+    Solver
+"""
+def quadratic_solver(max, x1, x2):
+    b = max / ((x2-x1)*(1/2 + 1/(x1**2-x2**2)*((x2**2-3*x1**2)/4 + (x1*x2)/2)))
+    a = b*(x2-x1)/(x1**2-x2**2)
+    c = -a*x1**2 - b*x1
+    return a, b, c
 
-
-
-
+def quadratic_equation(x, coefficients):
+    a = coefficients[0]
+    b = coefficients[1]
+    c = coefficients[2]
+    return a*x**2 + b*x + c
 
 
 

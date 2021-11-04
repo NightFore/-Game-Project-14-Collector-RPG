@@ -128,11 +128,13 @@ class Weapon(pygame.sprite.Sprite):
         init_sprite_image(self, self.main.item_folder)
 
     def load(self):
-        self.pos = self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2
-        update_sprite_rect(self, self.pos[0], self.pos[1])
+        update_sprite_rect(self, self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2)
 
     def new(self):
-        pass
+        self.x1, self.x2, self.y1 = self.pos[0], self.game.enemy.pos[0], self.pos[1]
+        self.coefficients = quadratic_solver(300, self.pos[0], self.game.enemy.pos[0])
+        self.t_move = 0
+        self.t_max = 1.5
 
     def get_keys(self):
         pass
@@ -143,8 +145,14 @@ class Weapon(pygame.sprite.Sprite):
     def update(self):
         if collide_hit_rect(self, self.game.enemy):
             self.kill()
-        self.pos[0] -= 10
+        self.dt = self.main.dt
+        self.update_move()
         update_sprite_rect(self, self.pos[0], self.pos[1])
+
+    def update_move(self):
+        self.pos[0] = self.x1 + (self.x2 - self.x1) * self.t_move / self.t_max
+        self.pos[1] = self.y1 - quadratic_equation(self.pos[0], self.coefficients)
+        self.t_move += self.dt
 
 
 
