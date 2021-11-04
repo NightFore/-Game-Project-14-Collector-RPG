@@ -55,16 +55,22 @@ class Main:
                 pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
             self.gameDisplay.blit(text_surface, text_rect)
 
-    def draw_surface(self, rect, border_size, color, border_color, align):
+    def draw_surface(self, align, rect, color, border_size=[0, 0], border_color=None):
         # Initialization
-        x, y, w, h = rect[0], rect[1], rect[2], rect[3]
+        x, y, w, h = int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])
         border_w, border_h = border_size[0], border_size[1]
 
+
+        if w - 2*border_w <= 0 or h - 2*border_h <= 0:
+            w = max(w, 2*border_w + 1)
+            h = max(h, 2*border_h + 1)
+
         # Border Surface
-        surface = pygame.Surface((w, h))
-        surface_rect = self.align_rect(surface, (x, y), align)
-        surface.fill(border_color)
-        self.gameDisplay.blit(surface, surface_rect)
+        if border_size != [0, 0] and border_color is not None:
+            surface = pygame.Surface((w, h))
+            surface_rect = self.align_rect(surface, (x, y), align)
+            surface.fill(border_color)
+            self.gameDisplay.blit(surface, surface_rect)
 
         # Main Surface
         surface = pygame.Surface((w - 2*border_w, h - 2*border_h))

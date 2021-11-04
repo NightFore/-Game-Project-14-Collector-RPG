@@ -47,8 +47,11 @@ class Player(pygame.sprite.Sprite):
         init_sprite_text(self)
 
     def load(self):
-        self.max_health = self.object["max_health"]
-        self.current_health = self.max_health
+        self.level = 1
+        self.type = "Hero"
+
+        self.max_hp = self.object["max_hp"]
+        self.current_hp = self.max_hp
         self.max_bp = self.object["max_bp"]
         self.current_bp = self.max_bp
         self.strength = self.object["strength"]
@@ -65,46 +68,62 @@ class Player(pygame.sprite.Sprite):
             update_sprite_image(button, self.weapon_images[index], self.weapon_settings["align"])
 
     def new(self):
-        pass
+        # Box
+        self.box_rect = [960, 140, 310, 210]
+        self.hp_rect_1 = [975, 250, 280, 24]
+        self.hp_rect_2 = self.hp_rect_1.copy()
+        self.bp_rect_1 = [975, 300, 280, 24]
+        self.bp_rect_2 = self.bp_rect_1.copy()
+        self.box_border_size = [6, 6]
+        self.stat_border_size = [3, 3]
+        self.box_color = DARKGREY
+        self.hp_color = RED
+        self.bp_color = BLUE
+        self.stat_border_color = BLACK
+        self.box_border_color = LIGHTSKYGREY
+        self.ui_align = "nw"
+
+        # Text
+        self.lv_pos = [980, 145]
+        self.type_pos = [980, 185]
+        self.hp_pos = [990, 230]
+        self.bp_pos = [990, 280]
 
     def get_keys(self):
+        pass
         # Initialization
-        keys = pygame.key.get_pressed()
+        # keys = pygame.key.get_pressed()
 
     def use_weapon(self, index):
-        Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
+        if self.current_bp > 0:
+            Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
+            self.current_bp -= 1
 
     def draw(self):
         # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
 
-        # Box
-        self.box_rect = [960, 140, 310, 210]
-        self.box_border_size = [6, 6]
-        self.box_color = DARKGREY
-        self.box_border_color = LIGHTSKYGREY
-        self.box_align = "nw"
-
-        # Statistics Box
-        self.hp_rect = [975, 250, 280, 24]
-        self.bp_rect = [975, 300, 280, 24]
-        self.stat_border_size = [3, 3]
-        self.hp_color = RED
-        self.bp_color = BLUE
-        self.stat_border_color = BLACK
-        self.stat_align = "nw"
-
         # Interface
-        self.main.draw_surface(self.box_rect, self.box_border_size, self.box_color, self.box_border_color, self.box_align)
-        self.main.draw_surface(self.hp_rect, self.stat_border_size, self.hp_color, self.stat_border_color, self.stat_align)
-        self.main.draw_surface(self.bp_rect, self.stat_border_size, self.bp_color, self.stat_border_color, self.stat_align)
-        self.main.draw_text("HP: %i / %i" % (self.current_health, self.max_health), self.font, self.font_color, (self.text_pos[0], self.text_pos[1]), self.text_align)
-        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, (self.text_pos[0], self.text_pos[1] + self.line_offset), self.text_align)
+        self.hp_rect_2[2] = self.hp_rect_1[2] * self.current_hp // self.max_hp
+        self.bp_rect_2[2] = self.bp_rect_1[2] * self.current_bp // self.max_bp
+        self.main.draw_surface(self.ui_align, self.box_rect, self.box_color, self.box_border_size, self.box_border_color)
+        self.main.draw_surface(self.ui_align, self.hp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.hp_rect_2, self.hp_color, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.bp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.bp_rect_2, self.bp_color, self.stat_border_size, self.stat_border_color)
+        self.main.draw_text("Level: %i" % self.level, self.font, self.font_color, self.lv_pos, self.ui_align)
+        self.main.draw_text("%s" % self.type, self.font, self.font_color, self.type_pos, self.ui_align)
+        self.main.draw_text("HP: %i / %i" % (self.current_hp, self.max_hp), self.font, self.font_color, self.hp_pos, self.ui_align)
+        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, self.bp_pos, self.ui_align)
 
     def update(self):
         self.get_keys()
         update_time_dependent(self)
         self.main.align_rect(self.surface, self.pos, self.align)
+
+        # Debug
+        if self.main.debug_mode:
+            self.current_hp = max(self.current_hp - 0.20, 0)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -116,8 +135,8 @@ class Enemy(pygame.sprite.Sprite):
         init_sprite_image(self, self.main.graphic_folder)
 
     def load(self):
-        self.max_health = self.object["max_health"]
-        self.current_health = self.max_health
+        self.max_hp = self.object["max_hp"]
+        self.current_hp = self.max_hp
         self.max_bp = self.object["max_bp"]
         self.bp = self.max_bp
         self.strength = self.object["strength"]
@@ -241,8 +260,7 @@ MAIN_DICT = {
         "settings": {
             "character": {
                 "pos": [1130, 585], "align": "s",
-                "text_pos": [990, 230], "text_align": "nw", "line_offset": 50,
-                "text": None, "font": "LiberationSerif", "font_color": WHITE,
+                "font": "LiberationSerif", "font_color": WHITE,
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
             "enemy": {"pos": [200, 585], "align": "s"},
@@ -251,13 +269,13 @@ MAIN_DICT = {
         "character": {
             "player": {
                 "image": "sprite_Kaduki_Actor63_1.png", "size": [32, 32], "scale_size": [96, 96],
-                "max_health": 50, "max_bp": 10, "strength": 5, "speed": 2
+                "max_hp": 50, "max_bp": 10, "strength": 5, "speed": 2
             },
         },
         "enemy": {
             "magician": {
                 "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
-                "max_health": 60, "max_bp": 12, "strength": 3, "speed": 1
+                "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1
             }
         },
         "weapon": {
@@ -271,7 +289,7 @@ MAIN_DICT = {
             },
             "sword_018": {
                 "type": "sword", "image": "item_WhiteCat_we_sword018.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": [10, 11, 12, 13, 15], "bp_cost": [5, 5, 6, 6, 7,]
+                "damage": [10, 11, 12, 13, 15], "bp_cost": [5, 5, 6, 6, 7]
             },
             "spear_006": {
                 "type": "spear", "image": "item_WhiteCat_we_spear006.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
