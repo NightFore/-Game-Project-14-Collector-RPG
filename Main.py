@@ -78,11 +78,28 @@ class Player(pygame.sprite.Sprite):
         # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
 
-        # Text
-        self.text_health = "HP %i / %i" % (self.current_health, self.max_health)
-        self.main.draw_text(self.text_health, self.font, self.font_color, self.text_pos, self.text_align)
-        self.text_bp = "BP %i / %i" % (self.current_bp, self.max_bp)
-        self.main.draw_text(self.text_bp, self.font, self.font_color, (self.text_pos[0], self.text_pos[1] + self.line_offset), self.text_align)
+        # Box
+        self.box_rect = [960, 140, 310, 210]
+        self.box_border_size = [6, 6]
+        self.box_color = DARKGREY
+        self.box_border_color = LIGHTSKYGREY
+        self.box_align = "nw"
+
+        # Statistics Box
+        self.hp_rect = [975, 250, 280, 24]
+        self.bp_rect = [975, 300, 280, 24]
+        self.stat_border_size = [3, 3]
+        self.hp_color = RED
+        self.bp_color = BLUE
+        self.stat_border_color = BLACK
+        self.stat_align = "nw"
+
+        # Interface
+        self.main.draw_surface(self.box_rect, self.box_border_size, self.box_color, self.box_border_color, self.box_align)
+        self.main.draw_surface(self.hp_rect, self.stat_border_size, self.hp_color, self.stat_border_color, self.stat_align)
+        self.main.draw_surface(self.bp_rect, self.stat_border_size, self.bp_color, self.stat_border_color, self.stat_align)
+        self.main.draw_text("HP: %i / %i" % (self.current_health, self.max_health), self.font, self.font_color, (self.text_pos[0], self.text_pos[1]), self.text_align)
+        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, (self.text_pos[0], self.text_pos[1] + self.line_offset), self.text_align)
 
     def update(self):
         self.get_keys()
@@ -199,7 +216,7 @@ MAIN_DICT = {
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
             "weapon_button": {
                 "align": "center", "size": (130, 94),
-                "border": True, "border_size": (6, 6), "border_color": BLACK,
+                "border": True, "border_size": (6, 6), "border_color": DARKGREY,
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
@@ -224,7 +241,7 @@ MAIN_DICT = {
         "settings": {
             "character": {
                 "pos": [1130, 585], "align": "s",
-                "text_pos": [990, 240], "text_align": "nw", "line_offset": 50,
+                "text_pos": [990, 230], "text_align": "nw", "line_offset": 50,
                 "text": None, "font": "LiberationSerif", "font_color": WHITE,
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },

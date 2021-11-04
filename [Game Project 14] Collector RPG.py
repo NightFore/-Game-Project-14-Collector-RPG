@@ -55,6 +55,23 @@ class Main:
                 pygame.draw.rect(self.gameDisplay, CYAN, text_rect, 1)
             self.gameDisplay.blit(text_surface, text_rect)
 
+    def draw_surface(self, rect, border_size, color, border_color, align):
+        # Initialization
+        x, y, w, h = rect[0], rect[1], rect[2], rect[3]
+        border_w, border_h = border_size[0], border_size[1]
+
+        # Border Surface
+        surface = pygame.Surface((w, h))
+        surface_rect = self.align_rect(surface, (x, y), align)
+        surface.fill(border_color)
+        self.gameDisplay.blit(surface, surface_rect)
+
+        # Main Surface
+        surface = pygame.Surface((w - 2*border_w, h - 2*border_h))
+        surface_rect = self.align_rect(surface, (x + border_w, y + border_h), align)
+        surface.fill(color)
+        self.gameDisplay.blit(surface, surface_rect)
+
     def load_data(self):
         # Main settings
         self.project_title = project_title
