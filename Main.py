@@ -50,18 +50,19 @@ class Player(pygame.sprite.Sprite):
         self.max_health = self.object["max_health"]
         self.current_health = self.max_health
         self.max_bp = self.object["max_bp"]
-        self.bp = self.max_bp
+        self.current_bp = self.max_bp
         self.strength = self.object["strength"]
         self.speed = self.object["speed"]
-        self.weapons = ["sword_002", "sword_008", "sword_018", "spear_006", "axe_002"]
 
+        self.weapons = ["sword_002", "sword_008", "sword_018", "spear_006", "axe_002"]
         self.weapon_dict = self.dict["weapon"]
+        self.weapon_settings = self.dict["settings"]["weapon_icon"]
         self.weapon_images = []
-        for index in range(len(self.weapons)):
-            weapon = self.weapon_dict[self.weapons[index]]
+        for weapon in self.weapons:
+            weapon = self.weapon_dict[weapon]
             self.weapon_images.append(load_image(self.main.item_folder, weapon["image"], weapon["color_key"], weapon["scale_size"]))
         for index, button in enumerate(self.game.weapon_buttons):
-            update_sprite_image(button, self.weapon_images[index], "center")
+            update_sprite_image(button, self.weapon_images[index], self.weapon_settings["align"])
 
     def new(self):
         pass
@@ -80,6 +81,8 @@ class Player(pygame.sprite.Sprite):
         # Text
         self.text_health = "HP %i / %i" % (self.current_health, self.max_health)
         self.main.draw_text(self.text_health, self.font, self.font_color, self.text_pos, self.text_align)
+        self.text_bp = "BP %i / %i" % (self.current_bp, self.max_bp)
+        self.main.draw_text(self.text_bp, self.font, self.font_color, (self.text_pos[0], self.text_pos[1] + self.line_offset), self.text_align)
 
     def update(self):
         self.get_keys()
@@ -213,11 +216,12 @@ MAIN_DICT = {
         "settings": {
             "character": {
                 "pos": [1130, 585], "align": "s",
-                "text_pos": [990, 240], "text_align": "nw",
+                "text_pos": [990, 240], "text_align": "nw", "line_offset": 50,
                 "text": None, "font": "LiberationSerif", "font_color": WHITE,
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
             "enemy": {"pos": [200, 585], "align": "s"},
+            "weapon_icon": {"align": "e"}
         },
         "character": {
             "player": {
@@ -234,23 +238,23 @@ MAIN_DICT = {
         "weapon": {
             "sword_002": {
                 "type": "sword", "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": 5, "bp_cost": 3
+                "damage": [5, 6, 7, 8, 9], "bp_cost": [3, 3, 4, 4, 5]
             },
             "sword_008": {
                 "type": "sword", "image": "item_WhiteCat_we_sword008.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": 7, "bp_cost": 4
+                "damage": [7, 8, 9, 10, 11], "bp_cost": [4, 4, 5, 5, 6]
             },
             "sword_018": {
                 "type": "sword", "image": "item_WhiteCat_we_sword018.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": 10, "bp_cost": 5
+                "damage": [10, 11, 12, 13, 15], "bp_cost": [5, 5, 6, 6, 7,]
             },
             "spear_006": {
                 "type": "spear", "image": "item_WhiteCat_we_spear006.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": 12, "bp_cost": 5
+                "damage": [12, 13, 15, 16, 18], "bp_cost": [5, 6, 8, 9, 11]
             },
             "axe_002": {
                 "type": "axe", "image": "item_WhiteCat_we_axe002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": 15, "bp_cost": 7
+                "damage": [15, 27, 29, 32, 35], "bp_cost": [8, 10, 13, 16, 20]
             },
 
         }

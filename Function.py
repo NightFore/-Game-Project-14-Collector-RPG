@@ -57,6 +57,8 @@ def init_sprite_text(self, text=None):
         self.text_pos = self.settings["text_pos"]
     else:
         self.text_pos = self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2
+    if "line_offset" in self.settings:
+        self.line_offset = self.settings["line_offset"]
 
     # Align
     if "text_align" in self.object:
