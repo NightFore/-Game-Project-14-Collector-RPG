@@ -123,7 +123,7 @@ class Player(pygame.sprite.Sprite):
 
         # Debug
         if self.main.debug_mode:
-            self.current_hp = max(self.current_hp - 0.20, 0)
+            self.current_hp = max(0, self.current_hp - 0.20)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -133,26 +133,64 @@ class Enemy(pygame.sprite.Sprite):
 
     def init(self):
         init_sprite_image(self, self.main.graphic_folder)
+        init_sprite_text(self)
 
     def load(self):
+        self.level = 1
+        self.type = "Magician"
+
         self.max_hp = self.object["max_hp"]
         self.current_hp = self.max_hp
         self.max_bp = self.object["max_bp"]
-        self.bp = self.max_bp
+        self.current_bp = self.max_bp
         self.strength = self.object["strength"]
         self.speed = self.object["speed"]
 
     def new(self):
-        pass
+        # Box
+        self.box_rect = [15, 30, 310, 210]
+        self.hp_rect_1 = [30, 140, 280, 24]
+        self.hp_rect_2 = self.hp_rect_1.copy()
+        self.bp_rect_1 = [30, 190, 280, 24]
+        self.bp_rect_2 = self.bp_rect_1.copy()
+        self.box_border_size = [6, 6]
+        self.stat_border_size = [3, 3]
+        self.box_color = DARKGREY
+        self.hp_color = RED
+        self.bp_color = BLUE
+        self.stat_border_color = BLACK
+        self.box_border_color = LIGHTSKYGREY
+        self.ui_align = "nw"
+
+        # Text
+        self.lv_pos = [35, 35]
+        self.type_pos = [35, 75]
+        self.hp_pos = [45, 120]
+        self.bp_pos = [45, 170]
 
     def get_keys(self):
         pass
 
     def draw(self):
+        # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
 
+        # Interface
+        self.hp_rect_2[2] = self.hp_rect_1[2] * self.current_hp // self.max_hp
+        self.bp_rect_2[2] = self.bp_rect_1[2] * self.current_bp // self.max_bp
+        self.main.draw_surface(self.ui_align, self.box_rect, self.box_color, self.box_border_size, self.box_border_color)
+        self.main.draw_surface(self.ui_align, self.hp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.hp_rect_2, self.hp_color, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.bp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+        self.main.draw_surface(self.ui_align, self.bp_rect_2, self.bp_color, self.stat_border_size, self.stat_border_color)
+        self.main.draw_text("Level: %i" % self.level, self.font, self.font_color, self.lv_pos, self.ui_align)
+        self.main.draw_text("%s" % self.type, self.font, self.font_color, self.type_pos, self.ui_align)
+        self.main.draw_text("HP: %i / %i" % (self.current_hp, self.max_hp), self.font, self.font_color, self.hp_pos, self.ui_align)
+        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, self.bp_pos, self.ui_align)
+
     def update(self):
-        pass
+        if self.current_hp <= 0:
+            self.kill()
 
 
 class Weapon(pygame.sprite.Sprite):
@@ -164,6 +202,7 @@ class Weapon(pygame.sprite.Sprite):
         init_sprite_image(self, self.main.item_folder)
 
     def load(self):
+        self.enemy = self.game.enemy
         update_sprite_rect(self, self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2)
 
     def new(self):
@@ -179,7 +218,8 @@ class Weapon(pygame.sprite.Sprite):
         self.main.gameDisplay.blit(self.image, self.rect)
 
     def update(self):
-        if collide_hit_rect(self, self.game.enemy):
+        if collide_hit_rect(self, self.enemy):
+            self.enemy.current_hp = max(0, self.enemy.current_hp - self.object["damage"][0])
             self.kill()
         self.dt = self.main.dt
         self.update_move()
@@ -263,7 +303,10 @@ MAIN_DICT = {
                 "font": "LiberationSerif", "font_color": WHITE,
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
-            "enemy": {"pos": [200, 585], "align": "s"},
+            "enemy": {
+                "pos": [200, 585], "align": "s",
+                "font": "LiberationSerif", "font_color": WHITE,
+            },
             "weapon_icon": {"align": "e"}
         },
         "character": {
