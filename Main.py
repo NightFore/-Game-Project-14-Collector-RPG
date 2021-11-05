@@ -147,10 +147,7 @@ class Player(pygame.sprite.Sprite):
         self.dt = self.main.dt
         update_time_dependent(self)
 
-        # Debug
-        if self.main.debug_mode:
-            self.current_hp = max(0, self.current_hp - 0.20)
-            self.current_bp = min(self.current_bp + 0.10, self.max_bp)
+        self.current_bp = min(self.current_bp + 0.10, self.max_bp)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -172,6 +169,11 @@ class Enemy(pygame.sprite.Sprite):
     def get_keys(self):
         pass
 
+    def auto_weapon(self, index):
+        weapon, level = list(self.weapons[index].items())[0]
+        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level]:
+            Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
+
     def draw(self):
         # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
@@ -181,6 +183,11 @@ class Enemy(pygame.sprite.Sprite):
         self.dt = self.main.dt
         if self.current_hp <= 0:
             self.kill()
+
+        for index in range(len(self.weapons)):
+            self.auto_weapon(index)
+
+        self.current_bp = min(self.current_bp + 0.10, self.max_bp)
 
 
 class Weapon(pygame.sprite.Sprite):
@@ -194,8 +201,13 @@ class Weapon(pygame.sprite.Sprite):
         self.parent.current_bp -= self.object["bp_cost"][self.level]
 
     def load(self):
+        if self.parent == self.game.player:
+            self.target = self.game.enemy
+        elif self.parent == self.game.enemy:
+            self.target = self.game.player
+
         update_sprite_rect(self, self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2)
-        self.x1, self.x2, self.y = self.game.player.pos[0], self.game.enemy.pos[0], self.pos[1]
+        self.x1, self.x2, self.y = self.parent.pos[0], self.target.pos[0], self.pos[1]
         self.damage = self.object["damage"][self.level]
 
     def new(self):
@@ -203,13 +215,14 @@ class Weapon(pygame.sprite.Sprite):
         self.t_move = 0
         self.t_max = 1.5
 
-        if self.parent == self.game.player:
-            self.target = self.game.enemy
-        elif self.parent == self.game.enemy:
-            self.target = self.game.player
-
     def get_keys(self):
         pass
+
+    def update_move(self):
+        self.pos[0] = self.x1 + (self.x2 - self.x1) * self.t_move / self.t_max
+        self.pos[1] = self.y - quadratic_equation(self.pos[0], self.coefficients)
+        self.t_move += self.dt
+        update_sprite_rect(self, self.pos[0], self.pos[1])
 
     def draw(self):
         self.main.gameDisplay.blit(self.image, self.rect)
@@ -220,12 +233,6 @@ class Weapon(pygame.sprite.Sprite):
             self.target.current_hp = max(0, self.target.current_hp - self.damage)
             self.kill()
         self.update_move()
-
-    def update_move(self):
-        self.pos[0] = self.x1 + (self.x2 - self.x1) * self.t_move / self.t_max
-        self.pos[1] = self.y - quadratic_equation(self.pos[0], self.coefficients)
-        self.t_move += self.dt
-        update_sprite_rect(self, self.pos[0], self.pos[1])
 
 
 
