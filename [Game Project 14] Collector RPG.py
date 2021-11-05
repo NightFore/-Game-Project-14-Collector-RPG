@@ -206,6 +206,8 @@ class Main:
         # Sprites --------------------- #
         for sprite in self.all_sprites:
             sprite.draw()
+            if self.debug_mode:
+                pygame.draw.rect(self.gameDisplay, CYAN, sprite.rect, 1)
 
         # Pause ----------------------- #
         if self.paused:

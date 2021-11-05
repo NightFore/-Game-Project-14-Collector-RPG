@@ -97,15 +97,14 @@ def load_sprite_stats(self):
     self.current_bp = self.max_bp
     self.strength = self.object["strength"]
     self.speed = self.object["speed"]
-
-def load_sprite_weapons(self):
     self.weapons = self.object["weapons"]
 
 def load_button_weapons(self):
     settings = self.dict["weapon"]["settings"]
     dw = 20 + max(0, 10 * (5 - len(self.weapons)))
-    for index, weapon in enumerate(self.weapons):
+    for index, weapon_dict in enumerate(self.weapons):
         # Weapon
+        weapon = next(iter(weapon_dict))
         dict = self.dict["weapon"][weapon]
         image = load_image(self.main.item_folder, dict["image"], dict["color_key"], dict["scale_size"])
 
@@ -126,7 +125,6 @@ class Player(pygame.sprite.Sprite):
 
     def load(self):
         load_sprite_stats(self)
-        load_sprite_weapons(self)
         load_button_weapons(self)
 
     def new(self):
@@ -136,9 +134,9 @@ class Player(pygame.sprite.Sprite):
         pass
 
     def use_weapon(self, index):
-        if self.current_bp > 0:
+        weapon, level = list(self.weapons[index].items())[0]
+        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level]:
             Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
-            self.current_bp -= 1
 
     def draw(self):
         # Surface
@@ -146,13 +144,13 @@ class Player(pygame.sprite.Sprite):
         draw_sprite_interface(self)
 
     def update(self):
-        self.get_keys()
+        self.dt = self.main.dt
         update_time_dependent(self)
-        self.main.align_rect(self.surface, self.pos, self.align)
 
         # Debug
         if self.main.debug_mode:
             self.current_hp = max(0, self.current_hp - 0.20)
+            self.current_bp = min(self.current_bp + 0.10, self.max_bp)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -167,7 +165,6 @@ class Enemy(pygame.sprite.Sprite):
 
     def load(self):
         load_sprite_stats(self)
-        load_sprite_weapons(self)
 
     def new(self):
         pass
@@ -181,6 +178,7 @@ class Enemy(pygame.sprite.Sprite):
         draw_sprite_interface(self)
 
     def update(self):
+        self.dt = self.main.dt
         if self.current_hp <= 0:
             self.kill()
 
@@ -188,20 +186,27 @@ class Enemy(pygame.sprite.Sprite):
 class Weapon(pygame.sprite.Sprite):
     def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
         # Initialization -------------- #
+        item, self.level = list(item.items())[0]
         init_sprite(self, main, group, dict, data, item, parent, variable, action)
 
     def init(self):
         init_sprite_image(self, self.main.item_folder)
+        self.parent.current_bp -= self.object["bp_cost"][self.level]
 
     def load(self):
-        self.enemy = self.game.enemy
         update_sprite_rect(self, self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2)
+        self.x1, self.x2, self.y = self.game.player.pos[0], self.game.enemy.pos[0], self.pos[1]
+        self.damage = self.object["damage"][self.level]
 
     def new(self):
-        self.x1, self.x2, self.y1 = self.pos[0], self.game.enemy.pos[0], self.pos[1]
-        self.coefficients = quadratic_solver(300, self.pos[0], self.game.enemy.pos[0])
+        self.coefficients = quadratic_solver(300, self.game.player.pos[0], self.game.enemy.pos[0])
         self.t_move = 0
         self.t_max = 1.5
+
+        if self.parent == self.game.player:
+            self.target = self.game.enemy
+        elif self.parent == self.game.enemy:
+            self.target = self.game.player
 
     def get_keys(self):
         pass
@@ -210,19 +215,17 @@ class Weapon(pygame.sprite.Sprite):
         self.main.gameDisplay.blit(self.image, self.rect)
 
     def update(self):
-        if collide_hit_rect(self, self.enemy):
-            self.enemy.current_hp = max(0, self.enemy.current_hp - self.object["damage"][0])
-            self.kill()
         self.dt = self.main.dt
+        if collide_hit_rect(self, self.target):
+            self.target.current_hp = max(0, self.target.current_hp - self.damage)
+            self.kill()
         self.update_move()
-        update_sprite_rect(self, self.pos[0], self.pos[1])
 
     def update_move(self):
         self.pos[0] = self.x1 + (self.x2 - self.x1) * self.t_move / self.t_max
-        self.pos[1] = self.y1 - quadratic_equation(self.pos[0], self.coefficients)
+        self.pos[1] = self.y - quadratic_equation(self.pos[0], self.coefficients)
         self.t_move += self.dt
-
-
+        update_sprite_rect(self, self.pos[0], self.pos[1])
 
 
 
@@ -311,7 +314,7 @@ MAIN_DICT = {
                 "image": "sprite_Kaduki_Actor63_1.png", "size": [32, 32], "scale_size": [96, 96],
                 "level": 2, "type": "Hero",
                 "max_hp": 50, "max_bp": 10, "strength": 5, "speed": 2,
-                "weapons": ["sword_002", "sword_008", "sword_018", "spear_006"]
+                "weapons": [{"sword_002": 0}, {"sword_008": 0}, {"sword_018": 0}, {"spear_006": 0}, {"axe_002": 0}]
             },
         },
         "enemy": {
@@ -319,7 +322,7 @@ MAIN_DICT = {
                 "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
                 "level": 1, "type": "Magician (F)",
                 "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1,
-                "weapons": ["axe_002"]
+                "weapons": [{"axe_002": 0}]
             }
         },
         "weapon": {
@@ -342,7 +345,7 @@ MAIN_DICT = {
             },
             "axe_002": {
                 "type": "axe", "image": "item_WhiteCat_we_axe002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
-                "damage": [15, 27, 29, 32, 35], "bp_cost": [8, 10, 13, 16, 20]
+                "damage": [15, 20, 25, 30, 35], "bp_cost": [8, 10, 13, 16, 20]
             },
 
         }
