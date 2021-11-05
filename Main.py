@@ -104,7 +104,7 @@ def load_button_weapons(self):
     dw = 20 + max(0, 10 * (5 - len(self.weapons)))
     for index, weapon_dict in enumerate(self.weapons):
         # Weapon
-        weapon = next(iter(weapon_dict))
+        weapon, level = list(self.weapons[index].items())[0]
         dict = self.dict["weapon"][weapon]
         image = load_image(self.main.item_folder, dict["image"], dict["color_key"], dict["scale_size"])
 
@@ -112,6 +112,10 @@ def load_button_weapons(self):
         button = Button(self.main, self.game.weapon_buttons, self.main.button_dict, data="weapon_buttons", item="weapon_button", variable=index)
         update_sprite_rect(button, button.pos[0] + (button.size[0] + dw) * ((index - len(self.weapons) // 2) + ((1 + len(self.weapons)) % 2) / 2))
         update_sprite_image(button, image, settings["align"])
+
+        # BP Cost
+        button.text = self.dict["weapon"][weapon]["bp_cost"][level-1]
+        button.text_pos = [button.pos[0] + button.text_pos[0], button.pos[1] + button.text_pos[1]]
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
@@ -135,7 +139,7 @@ class Player(pygame.sprite.Sprite):
 
     def use_weapon(self, index):
         weapon, level = list(self.weapons[index].items())[0]
-        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level]:
+        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level-1]:
             Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
 
     def draw(self):
@@ -171,7 +175,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def auto_weapon(self, index):
         weapon, level = list(self.weapons[index].items())[0]
-        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level]:
+        if self.current_bp >= self.dict["weapon"][weapon]["bp_cost"][level-1]:
             Weapon(self.main, self.game.weapons, self.dict, data="weapon", item=self.weapons[index], parent=self)
 
     def draw(self):
@@ -198,7 +202,7 @@ class Weapon(pygame.sprite.Sprite):
 
     def init(self):
         init_sprite_image(self, self.main.item_folder)
-        self.parent.current_bp -= self.object["bp_cost"][self.level]
+        self.parent.current_bp -= self.object["bp_cost"][self.level-1]
 
     def load(self):
         if self.parent == self.game.player:
@@ -208,7 +212,7 @@ class Weapon(pygame.sprite.Sprite):
 
         update_sprite_rect(self, self.parent.rect[0] + self.parent.rect[2] // 2, self.parent.rect[1] + self.parent.rect[3] // 2)
         self.x1, self.x2, self.y = self.parent.pos[0], self.target.pos[0], self.pos[1]
-        self.damage = self.object["damage"][self.level]
+        self.damage = self.object["damage"][self.level-1]
 
     def new(self):
         self.coefficients = quadratic_solver(300, self.game.player.pos[0], self.game.enemy.pos[0])
@@ -278,7 +282,7 @@ MAIN_DICT = {
             "weapon_button": {
                 "align": "center", "size": (140, 100),
                 "border": True, "border_size": (6, 6), "border_color": DARKGREY,
-                "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
+                "text_pos": [30, 0], "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
         },
@@ -321,7 +325,7 @@ MAIN_DICT = {
                 "image": "sprite_Kaduki_Actor63_1.png", "size": [32, 32], "scale_size": [96, 96],
                 "level": 2, "type": "Hero",
                 "max_hp": 50, "max_bp": 10, "strength": 5, "speed": 2,
-                "weapons": [{"sword_002": 0}, {"sword_008": 0}, {"sword_018": 0}, {"spear_006": 0}, {"axe_002": 0}]
+                "weapons": [{"sword_002": 1}, {"sword_008": 1}, {"sword_018": 1}, {"spear_006": 1}, {"axe_002": 1}]
             },
         },
         "enemy": {
@@ -329,7 +333,7 @@ MAIN_DICT = {
                 "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
                 "level": 1, "type": "Magician (F)",
                 "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1,
-                "weapons": [{"axe_002": 0}]
+                "weapons": [{"axe_002": 1}]
             }
         },
         "weapon": {
