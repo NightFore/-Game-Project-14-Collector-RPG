@@ -36,6 +36,78 @@ class Game:
     def use_weapon(self, index):
         self.player.use_weapon(index)
 
+def load_sprite_interface(self):
+    # Initialization
+    self.interface = self.dict["settings"]["interface"]
+
+    # Rect
+    self.box_rect = self.settings["box_rect"]
+    self.hp_rect_1 = self.settings["hp_rect"]
+    self.bp_rect_1 = self.settings["bp_rect"]
+    self.hp_rect_2 = self.hp_rect_1.copy()
+    self.bp_rect_2 = self.bp_rect_1.copy()
+
+    # Pos
+    self.lv_pos = self.settings["lv_pos"]
+    self.type_pos = self.settings["type_pos"]
+    self.hp_pos = self.settings["hp_pos"]
+    self.bp_pos = self.settings["bp_pos"]
+
+    # Border Size
+    self.box_border_size = self.interface["box_border_size"]
+    self.stat_border_size = self.interface["stat_border_size"]
+
+    # Color
+    self.box_color = self.interface["box_color"]
+    self.hp_color = self.interface["hp_color"]
+    self.bp_color = self.interface["bp_color"]
+    self.box_border_color = self.interface["box_border_color"]
+    self.stat_border_color = self.interface["stat_border_color"]
+
+    # Interface Align
+    self.ui_align = self.interface["ui_align"]
+
+
+def draw_sprite_interface(self):
+    # Initialization
+    self.hp_rect_2[2] = self.hp_rect_1[2] * self.current_hp // self.max_hp
+    self.bp_rect_2[2] = self.bp_rect_1[2] * self.current_bp // self.max_bp
+
+    # Box
+    self.main.draw_surface(self.ui_align, self.box_rect, self.box_color, self.box_border_size, self.box_border_color)
+
+    # Stat (Inside)
+    self.main.draw_surface(self.ui_align, self.hp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+    self.main.draw_surface(self.ui_align, self.bp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
+
+    # Stat (Outside)
+    self.main.draw_surface(self.ui_align, self.hp_rect_2, self.hp_color, self.stat_border_size, self.stat_border_color)
+    self.main.draw_surface(self.ui_align, self.bp_rect_2, self.bp_color, self.stat_border_size, self.stat_border_color)
+
+    # Text
+    self.main.draw_text("Level: %i" % self.level, self.font, self.font_color, self.lv_pos, self.ui_align)
+    self.main.draw_text("%s" % self.type, self.font, self.font_color, self.type_pos, self.ui_align)
+    self.main.draw_text("HP: %i / %i" % (self.current_hp, self.max_hp), self.font, self.font_color, self.hp_pos, self.ui_align)
+    self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, self.bp_pos, self.ui_align)
+
+def load_sprite_stats(self):
+    self.level = self.object["level"]
+    self.type = self.object["type"]
+    self.max_hp = self.object["max_hp"]
+    self.max_bp = self.object["max_bp"]
+    self.current_hp = self.max_hp
+    self.current_bp = self.max_bp
+    self.strength = self.object["strength"]
+    self.speed = self.object["speed"]
+
+def load_sprite_weapons(self):
+    self.weapons = self.object["weapons"]
+    self.weapon_dict = self.dict["weapon"]
+    self.weapon_settings = self.dict["settings"]["weapon_icon"]
+    self.weapon_images = []
+    for weapon in self.weapons:
+        weapon = self.weapon_dict[weapon]
+        self.weapon_images.append(load_image(self.main.item_folder, weapon["image"], weapon["color_key"], weapon["scale_size"]))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
@@ -45,54 +117,22 @@ class Player(pygame.sprite.Sprite):
     def init(self):
         init_sprite_image_animated(self)
         init_sprite_text(self)
+        load_sprite_interface(self)
 
     def load(self):
-        self.level = 1
-        self.type = "Hero"
-
-        self.max_hp = self.object["max_hp"]
-        self.current_hp = self.max_hp
-        self.max_bp = self.object["max_bp"]
-        self.current_bp = self.max_bp
-        self.strength = self.object["strength"]
-        self.speed = self.object["speed"]
-
-        self.weapons = ["sword_002", "sword_008", "sword_018", "spear_006", "axe_002"]
-        self.weapon_dict = self.dict["weapon"]
-        self.weapon_settings = self.dict["settings"]["weapon_icon"]
-        self.weapon_images = []
-        for weapon in self.weapons:
-            weapon = self.weapon_dict[weapon]
-            self.weapon_images.append(load_image(self.main.item_folder, weapon["image"], weapon["color_key"], weapon["scale_size"]))
+        load_sprite_stats(self)
+        load_sprite_weapons(self)
         for index, button in enumerate(self.game.weapon_buttons):
-            update_sprite_image(button, self.weapon_images[index], self.weapon_settings["align"])
+            if index < len(self.weapons):
+                update_sprite_image(button, self.weapon_images[index], self.weapon_settings["align"])
+            else:
+                button.kill()
 
     def new(self):
-        # Box
-        self.box_rect = [960, 140, 310, 210]
-        self.hp_rect_1 = [975, 250, 280, 24]
-        self.hp_rect_2 = self.hp_rect_1.copy()
-        self.bp_rect_1 = [975, 300, 280, 24]
-        self.bp_rect_2 = self.bp_rect_1.copy()
-        self.box_border_size = [6, 6]
-        self.stat_border_size = [3, 3]
-        self.box_color = DARKGREY
-        self.hp_color = RED
-        self.bp_color = BLUE
-        self.stat_border_color = BLACK
-        self.box_border_color = LIGHTSKYGREY
-        self.ui_align = "nw"
-
-        # Text
-        self.lv_pos = [980, 145]
-        self.type_pos = [980, 185]
-        self.hp_pos = [990, 230]
-        self.bp_pos = [990, 280]
+        pass
 
     def get_keys(self):
         pass
-        # Initialization
-        # keys = pygame.key.get_pressed()
 
     def use_weapon(self, index):
         if self.current_bp > 0:
@@ -102,19 +142,7 @@ class Player(pygame.sprite.Sprite):
     def draw(self):
         # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
-
-        # Interface
-        self.hp_rect_2[2] = self.hp_rect_1[2] * self.current_hp // self.max_hp
-        self.bp_rect_2[2] = self.bp_rect_1[2] * self.current_bp // self.max_bp
-        self.main.draw_surface(self.ui_align, self.box_rect, self.box_color, self.box_border_size, self.box_border_color)
-        self.main.draw_surface(self.ui_align, self.hp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.hp_rect_2, self.hp_color, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.bp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.bp_rect_2, self.bp_color, self.stat_border_size, self.stat_border_color)
-        self.main.draw_text("Level: %i" % self.level, self.font, self.font_color, self.lv_pos, self.ui_align)
-        self.main.draw_text("%s" % self.type, self.font, self.font_color, self.type_pos, self.ui_align)
-        self.main.draw_text("HP: %i / %i" % (self.current_hp, self.max_hp), self.font, self.font_color, self.hp_pos, self.ui_align)
-        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, self.bp_pos, self.ui_align)
+        draw_sprite_interface(self)
 
     def update(self):
         self.get_keys()
@@ -134,39 +162,14 @@ class Enemy(pygame.sprite.Sprite):
     def init(self):
         init_sprite_image(self, self.main.graphic_folder)
         init_sprite_text(self)
+        load_sprite_interface(self)
 
     def load(self):
-        self.level = 1
-        self.type = "Magician"
-
-        self.max_hp = self.object["max_hp"]
-        self.current_hp = self.max_hp
-        self.max_bp = self.object["max_bp"]
-        self.current_bp = self.max_bp
-        self.strength = self.object["strength"]
-        self.speed = self.object["speed"]
+        load_sprite_stats(self)
+        load_sprite_weapons(self)
 
     def new(self):
-        # Box
-        self.box_rect = [15, 30, 310, 210]
-        self.hp_rect_1 = [30, 140, 280, 24]
-        self.hp_rect_2 = self.hp_rect_1.copy()
-        self.bp_rect_1 = [30, 190, 280, 24]
-        self.bp_rect_2 = self.bp_rect_1.copy()
-        self.box_border_size = [6, 6]
-        self.stat_border_size = [3, 3]
-        self.box_color = DARKGREY
-        self.hp_color = RED
-        self.bp_color = BLUE
-        self.stat_border_color = BLACK
-        self.box_border_color = LIGHTSKYGREY
-        self.ui_align = "nw"
-
-        # Text
-        self.lv_pos = [35, 35]
-        self.type_pos = [35, 75]
-        self.hp_pos = [45, 120]
-        self.bp_pos = [45, 170]
+        pass
 
     def get_keys(self):
         pass
@@ -174,19 +177,7 @@ class Enemy(pygame.sprite.Sprite):
     def draw(self):
         # Surface
         self.main.gameDisplay.blit(self.image, self.rect)
-
-        # Interface
-        self.hp_rect_2[2] = self.hp_rect_1[2] * self.current_hp // self.max_hp
-        self.bp_rect_2[2] = self.bp_rect_1[2] * self.current_bp // self.max_bp
-        self.main.draw_surface(self.ui_align, self.box_rect, self.box_color, self.box_border_size, self.box_border_color)
-        self.main.draw_surface(self.ui_align, self.hp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.hp_rect_2, self.hp_color, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.bp_rect_1, LIGHTGREY, self.stat_border_size, self.stat_border_color)
-        self.main.draw_surface(self.ui_align, self.bp_rect_2, self.bp_color, self.stat_border_size, self.stat_border_color)
-        self.main.draw_text("Level: %i" % self.level, self.font, self.font_color, self.lv_pos, self.ui_align)
-        self.main.draw_text("%s" % self.type, self.font, self.font_color, self.type_pos, self.ui_align)
-        self.main.draw_text("HP: %i / %i" % (self.current_hp, self.max_hp), self.font, self.font_color, self.hp_pos, self.ui_align)
-        self.main.draw_text("BP: %i / %i" % (self.current_bp, self.max_bp), self.font, self.font_color, self.bp_pos, self.ui_align)
+        draw_sprite_interface(self)
 
     def update(self):
         if self.current_hp <= 0:
@@ -298,27 +289,41 @@ MAIN_DICT = {
     },
     "game": {
         "settings": {
+            "interface": {
+                "box_border_size": [6, 6], "stat_border_size": [3, 3],
+                "box_color": DARKGREY, "hp_color": RED, "bp_color": BLUE,
+                "box_border_color": LIGHTSKYGREY, "stat_border_color": BLACK,
+                "ui_align": "nw"
+            },
             "character": {
                 "pos": [1130, 585], "align": "s",
                 "font": "LiberationSerif", "font_color": WHITE,
+                "box_rect": [960, 140, 310, 210], "hp_rect": [975, 250, 280, 24], "bp_rect": [975, 300, 280, 24],
+                "lv_pos": [980, 145], "type_pos": [980, 185], "hp_pos": [990, 230], "bp_pos": [990, 280],
                 "animation_time": 0.25, "animation_loop": True, "animation_reverse": True,
             },
             "enemy": {
                 "pos": [200, 585], "align": "s",
                 "font": "LiberationSerif", "font_color": WHITE,
+                "box_rect": [15, 30, 310, 210], "hp_rect": [30, 140, 280, 24], "bp_rect": [30, 190, 280, 24],
+                "lv_pos": [35, 35], "type_pos": [35, 75], "hp_pos": [45, 120], "bp_pos": [45, 170],
             },
             "weapon_icon": {"align": "e"}
         },
         "character": {
             "player": {
                 "image": "sprite_Kaduki_Actor63_1.png", "size": [32, 32], "scale_size": [96, 96],
-                "max_hp": 50, "max_bp": 10, "strength": 5, "speed": 2
+                "level": 2, "type": "Hero",
+                "max_hp": 50, "max_bp": 10, "strength": 5, "speed": 2,
+                "weapons": ["sword_002", "sword_008", "sword_018", "spear_006"]
             },
         },
         "enemy": {
             "magician": {
                 "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
-                "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1
+                "level": 1, "type": "Magician (F)",
+                "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1,
+                "weapons": ["sword_002"]
             }
         },
         "weapon": {
