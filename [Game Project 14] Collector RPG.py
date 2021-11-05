@@ -92,9 +92,9 @@ class Main:
         self.se_folder = path.join(self.data_folder, "sound")
         self.music_folder = path.join(self.data_folder, "music")
         self.map_folder = path.join(self.data_folder, "map")
-        self.font_folder = path.join(self.data_folder, "fonts")
+        self.font_folder = path.join(self.data_folder, "font")
 
-        # Dict
+        # Dicts
         self.main_dict = MAIN_DICT
         self.game_dict = self.main_dict["game"]
         self.background_dict = self.main_dict["background"]
@@ -104,25 +104,28 @@ class Main:
         self.menu_dict = self.main_dict["menu"]
         self.button_dict = self.main_dict["button"]
 
+        # Sound Effects
         self.sound_effects = {}
         for sound in self.sound_dict:
             self.sound_effects[sound] = pygame.mixer.Sound(path.join(self.se_folder, self.sound_dict[sound]))
         for sound in self.sound_dict:
             self.sound_effects[sound].set_volume(default_sound_volume / 100)
 
+        # Fonts
         self.font = pygame.font.Font(None, 100)
         for font in self.font_dict:
             font_ttf = self.font_dict[font]["ttf"]
             font_size = self.font_dict[font]["size"]
             self.font_dict[font] = pygame.font.Font(path.join(self.font_folder, font_ttf), font_size)
 
+    def new(self):
+        # Sprites
+        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.buttons = pygame.sprite.Group()
+
         # Pause Screen
         self.dim_screen = pygame.Surface(self.gameDisplay.get_size()).convert_alpha()
         self.dim_screen.fill((100, 100, 100, 120))
-
-    def new(self):
-        self.all_sprites = pygame.sprite.LayeredUpdates()
-        self.buttons = pygame.sprite.Group()
 
     def init_main(self):
         self.debug_color = CYAN

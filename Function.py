@@ -89,9 +89,9 @@ def init_sprite_text(self, text=None):
 """
 def init_sprite_surface(self):
     if "pos" in self.object:
-        self.pos = self.object["pos"]
+        self.pos = self.object["pos"].copy()
     if "pos" in self.settings:
-        self.pos = self.settings["pos"]
+        self.pos = self.settings["pos"].copy()
     if "align" in self.object:
         self.align = self.object["align"]
     if "align" in self.settings:
@@ -131,7 +131,7 @@ def init_surface(surface, surface_rect, color, border_color=None):
 def init_sprite_image(self, image_dir):
     # Pos
     if "pos" in self.settings:
-        self.pos = self.settings["pos"]
+        self.pos = self.settings["pos"].copy()
     else:
         self.pos = [0, 0]
 

@@ -28,8 +28,6 @@ class Game:
 
     def new_game(self):
         self.main.update_menu("battle_menu")
-        for button in self.main.button_dict["weapon_buttons"]:
-            Button(self.main, self.weapon_buttons, self.main.button_dict, data="weapon_buttons", item=button)
         self.player = Player(self.main, self.characters, self.game_dict, data="character", item="player")
         self.enemy = Enemy(self.main, self.enemies, self.game_dict, data="enemy", item="magician")
 
@@ -102,12 +100,19 @@ def load_sprite_stats(self):
 
 def load_sprite_weapons(self):
     self.weapons = self.object["weapons"]
-    self.weapon_dict = self.dict["weapon"]
-    self.weapon_settings = self.dict["settings"]["weapon_icon"]
-    self.weapon_images = []
-    for weapon in self.weapons:
-        weapon = self.weapon_dict[weapon]
-        self.weapon_images.append(load_image(self.main.item_folder, weapon["image"], weapon["color_key"], weapon["scale_size"]))
+
+def load_button_weapons(self):
+    settings = self.dict["weapon"]["settings"]
+    dw = 20 + max(0, 10 * (5 - len(self.weapons)))
+    for index, weapon in enumerate(self.weapons):
+        # Weapon
+        dict = self.dict["weapon"][weapon]
+        image = load_image(self.main.item_folder, dict["image"], dict["color_key"], dict["scale_size"])
+
+        # Button
+        button = Button(self.main, self.game.weapon_buttons, self.main.button_dict, data="weapon_buttons", item="weapon_button", variable=index)
+        update_sprite_rect(button, button.pos[0] + (button.size[0] + dw) * ((index - len(self.weapons) // 2) + ((1 + len(self.weapons)) % 2) / 2))
+        update_sprite_image(button, image, settings["align"])
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, main, group, dict, data, item, parent=None, variable=None, action=None):
@@ -122,11 +127,7 @@ class Player(pygame.sprite.Sprite):
     def load(self):
         load_sprite_stats(self)
         load_sprite_weapons(self)
-        for index, button in enumerate(self.game.weapon_buttons):
-            if index < len(self.weapons):
-                update_sprite_image(button, self.weapon_images[index], self.weapon_settings["align"])
-            else:
-                button.kill()
+        load_button_weapons(self)
 
     def new(self):
         pass
@@ -265,26 +266,22 @@ MAIN_DICT = {
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
             "weapon_button": {
-                "align": "center", "size": (130, 94),
+                "align": "center", "size": (140, 100),
                 "border": True, "border_size": (6, 6), "border_color": DARKGREY,
                 "text_align": "center", "font": "LiberationSerif", "font_color": WHITE,
                 "inactive_color": LIGHT_SKY_BLUE, "active_color": DARK_SKY_BLUE,
                 "sound_action": None, "sound_active": None, "sound_inactive": None},
         },
         "main_menu": {
-            "new_game": {"settings": "default", "pos": (20, 20), "text": "New Game", "action": "self.game.new_game"},
-            "select_level": {"settings": "default", "pos": (20, 90), "text": "Select Level", "action": None},
-            "exit": {"settings": "default", "pos": (20, 160), "text": "Exit", "action": "self.main.quit_game"},
+            "new_game": {"settings": "default", "pos": [20, 20], "text": "New Game", "action": "self.game.new_game"},
+            "select_level": {"settings": "default", "pos": [20, 90], "text": "Select Level", "action": None},
+            "exit": {"settings": "default", "pos": [20, 160], "text": "Exit", "action": "self.main.quit_game"},
         },
         "battle_menu": {
 
         },
         "weapon_buttons": {
-            "weapon_button_0": {"settings": "weapon_button", "pos": (320, 655), "variable": 0, "action": "self.game.use_weapon"},
-            "weapon_button_1": {"settings": "weapon_button", "pos": (480, 655), "variable": 1, "action": "self.game.use_weapon"},
-            "weapon_button_2": {"settings": "weapon_button", "pos": (640, 655), "variable": 2, "action": "self.game.use_weapon"},
-            "weapon_button_3": {"settings": "weapon_button", "pos": (800, 655), "variable": 3, "action": "self.game.use_weapon"},
-            "weapon_button_4": {"settings": "weapon_button", "pos": (960, 655), "variable": 4, "action": "self.game.use_weapon"},
+            "weapon_button": {"settings": "weapon_button", "pos": [640, 655], "action": "self.game.use_weapon"},
         },
     },
     "game": {
@@ -308,7 +305,6 @@ MAIN_DICT = {
                 "box_rect": [15, 30, 310, 210], "hp_rect": [30, 140, 280, 24], "bp_rect": [30, 190, 280, 24],
                 "lv_pos": [35, 35], "type_pos": [35, 75], "hp_pos": [45, 120], "bp_pos": [45, 170],
             },
-            "weapon_icon": {"align": "e"}
         },
         "character": {
             "player": {
@@ -323,10 +319,11 @@ MAIN_DICT = {
                 "image": "mon_018_magician_female.bmp", "scale_size": [168, 216], "color_key": (129, 121, 125),
                 "level": 1, "type": "Magician (F)",
                 "max_hp": 60, "max_bp": 12, "strength": 3, "speed": 1,
-                "weapons": ["sword_002"]
+                "weapons": ["axe_002"]
             }
         },
         "weapon": {
+            "settings": {"align": "e"},
             "sword_002": {
                 "type": "sword", "image": "item_WhiteCat_we_sword002.png", "color_key": (50, 201, 196), "scale_size": [48, 48],
                 "damage": [5, 6, 7, 8, 9], "bp_cost": [3, 3, 4, 4, 5]
